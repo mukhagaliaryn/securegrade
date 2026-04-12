@@ -1,0 +1,57 @@
+{% extends 'layouts/task_layout.html' %}
+
+{% block title %}{{ user_task.task.get_task_type_display }}{% endblock title %}
+
+{% block task_layout %}
+<div class="grid gap-6">
+    <!-- Main task body -->
+    <div class="grid gap-6">
+        {% if task_type == 'theory' %}
+            {% include 'components/app/task_theory.html' %}
+        {% elif task_type == 'video' %}
+            {% include 'components/app/task_video.html' %}
+        {% elif task_type == 'test' %}
+            {% include 'components/app/task_test.html' %}
+        {% elif task_type == 'simulator' %}
+            {% include 'components/app/task_simulator.html' %}
+        {% endif %}
+    </div>
+
+    <!-- Lesson finish / result info -->
+    <div class="fixed bottom-5 end-5 z-50">
+        {% if all_tasks_completed and not user_lesson.is_completed %}
+            <div class="flex justify-center">
+                {% include 'components/app/user/lesson/lesson_finish_modal.html' %}
+            </div>
+        {% elif user_lesson.is_completed %}
+            <div class="rounded-3xl border border-emerald-200 bg-emerald-50 p-5 md:p-6">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 text-left">
+                    <div class="flex items-start gap-3">
+                        <div class="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10" />
+                                <path d="m9 12 2 2 4-4" />
+                            </svg>
+                        </div>
+
+                        <div class="grid gap-1">
+                            <h2 class="text-lg font-bold text-emerald-800">Бұл сабақ аяқталған</h2>
+                            <p class="text-sm text-emerald-700/90">
+                                Сабақ бойынша барлық тапсырмалар қаралып, нәтиже сақталған.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="inline-flex items-center gap-2 rounded-2xl bg-white border border-emerald-200 px-4 py-3 text-emerald-800 font-semibold shadow-sm self-start md:self-center">
+                        <svg class="w-5 h-5 text-amber-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M13.849 4.22c-.684-1.626-3.014-1.626-3.698 0L8.397 8.387l-4.552.361c-1.775.14-2.495 2.331-1.142 3.477l3.468 2.937-1.06 4.392c-.413 1.713 1.472 3.067 2.992 2.149L12 19.35l3.897 2.354c1.52.918 3.405-.436 2.992-2.15l-1.06-4.39 3.468-2.938c1.353-1.146.633-3.336-1.142-3.477l-4.552-.36-1.754-4.17Z" />
+                        </svg>
+                        <span>{{ user_lesson.rating }} балл ({{ lesson_rating_5 }})</span>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock task_layout %}

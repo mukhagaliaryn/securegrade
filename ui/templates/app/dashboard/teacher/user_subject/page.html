@@ -1,0 +1,654 @@
+{% extends 'layouts/base_layout.html' %}
+
+{% block title %}
+    {{ user_subject.user }} — {{ user_subject.subject.name }}
+{% endblock title %}
+
+{% block base_layout %}
+<div class="max-w-7xl py-6 px-4 mx-auto grid gap-6">
+
+    <!-- Header -->
+    <div class="rounded-3xl border border-border-200 bg-white p-6 shadow-sm">
+        <div class="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-6">
+            <div class="flex items-start gap-4">
+                {% if user_subject.user.avatar %}
+                    <img
+                        class="w-20 h-20 rounded-full object-cover"
+                        src="{{ user_subject.user.avatar.url }}"
+                        alt="{{ user_subject.user }}"
+                    >
+                {% else %}
+                    <div class="w-20 h-20 rounded-full bg-secondary-100 flex items-center justify-center text-2xl font-semibold text-foreground">
+                        {{ user_subject.user.first_name|first|upper }}{{ user_subject.user.last_name|first|upper }}
+                    </div>
+                {% endif %}
+
+                <div class="grid gap-2">
+                    <div class="flex flex-wrap items-center gap-3">
+                        <h1 class="text-2xl md:text-3xl font-semibold">
+                            {% if user_subject.user.first_name or user_subject.user.last_name %}
+                                {{ user_subject.user.first_name }} {{ user_subject.user.last_name }}
+                            {% else %}
+                                {{ user_subject.user.username }}
+                            {% endif %}
+                        </h1>
+
+                        {% if user_subject.is_completed %}
+                            <span class="inline-flex items-center gap-2 rounded-2xl bg-emerald-100 px-3 py-1 text-sm font-medium text-emerald-700">
+                                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                Пән аяқталды
+                            </span>
+                        {% else %}
+                            <span class="inline-flex items-center gap-2 rounded-2xl bg-amber-100 px-3 py-1 text-sm font-medium text-amber-700">
+                                <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                                Пән өтілуде
+                            </span>
+                        {% endif %}
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-3 text-sm text-muted">
+                        <span class="inline-flex items-center gap-2 rounded-2xl bg-secondary-100 px-3 py-2">
+                            Пән: {{ user_subject.subject.name }}
+                        </span>
+
+                        {% if user_subject.created_at %}
+                            <span class="inline-flex items-center gap-2 rounded-2xl bg-secondary-100 px-3 py-2">
+                                Басталды: {{ user_subject.created_at|date:"d.m.Y H:i" }}
+                            </span>
+                        {% endif %}
+
+                        {% if user_subject.completed_at %}
+                            <span class="inline-flex items-center gap-2 rounded-2xl bg-secondary-100 px-3 py-2">
+                                Аяқталды: {{ user_subject.completed_at|date:"d.m.Y H:i" }}
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <a
+                    href="{% url 'teacher:dashboard' %}"
+                    class="inline-flex items-center justify-center rounded-2xl border border-border-200 bg-white px-5 py-3 text-sm font-medium hover:bg-secondary-50 transition-all"
+                >
+                    Артқа қайту
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <!-- Subject -->
+        <div class="rounded-3xl border border-border-200 bg-white p-5 shadow-sm">
+            <div class="flex items-start justify-between gap-4">
+                <div class="grid gap-1">
+                    <p class="text-sm text-muted">Пән</p>
+                    <h3 class="text-lg font-semibold">Жалпы көрсеткіш</h3>
+                </div>
+                <div class="w-11 h-11 rounded-2xl bg-primary-100 text-primary-600 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 7v14"/>
+                        <path d="M3 18h18"/>
+                        <path d="M7 3h10l4 4H3z"/>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="mt-5 flex items-center justify-between gap-4">
+                <div
+                    class="radial-progress bg-primary-50 text-primary-600 border-8 border-primary-100 font-semibold"
+                    style="--value: {{ statistics.subject_percentage|floatformat:0 }}; --size: 5.5rem; --thickness: 0.5rem;"
+                    aria-valuenow="{{ statistics.subject_percentage|floatformat:0 }}"
+                    role="progressbar"
+                >
+                    {{ statistics.subject_percentage|floatformat:0 }}%
+                </div>
+
+                <div class="flex flex-col items-end gap-2">
+                    <span class="text-sm text-muted">Орташа баға</span>
+                    <div class="inline-flex items-center gap-2 bg-secondary-50 rounded-2xl px-4 py-2 border border-border-200 font-semibold">
+                        {{ statistics.subject_rating }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chapter -->
+        <div class="rounded-3xl border border-border-200 bg-white p-5 shadow-sm">
+            <div class="flex items-start justify-between gap-4">
+                <div class="grid gap-1">
+                    <p class="text-sm text-muted">Бөлімдер</p>
+                    <h3 class="text-lg font-semibold">Орташа көрсеткіш</h3>
+                </div>
+                <div class="w-11 h-11 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 7h18" />
+                        <path d="M3 12h18" />
+                        <path d="M3 17h12" />
+                    </svg>
+                </div>
+            </div>
+
+            <div class="mt-5 flex items-center justify-between gap-4">
+                <div
+                    class="radial-progress bg-emerald-50 text-emerald-600 border-8 border-emerald-100 font-semibold"
+                    style="--value: {{ statistics.chapter_percentage|floatformat:0 }}; --size: 5.5rem; --thickness: 0.5rem;"
+                    aria-valuenow="{{ statistics.chapter_percentage|floatformat:0 }}"
+                    role="progressbar"
+                >
+                    {{ statistics.chapter_percentage|floatformat:0 }}%
+                </div>
+
+                <div class="flex flex-col items-end gap-2">
+                    <span class="text-sm text-muted">Орташа баға</span>
+                    <div class="inline-flex items-center gap-2 bg-secondary-50 rounded-2xl px-4 py-2 border border-border-200 font-semibold">
+                        {{ statistics.chapter_rating }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lesson -->
+        <div class="rounded-3xl border border-border-200 bg-white p-5 shadow-sm">
+            <div class="flex items-start justify-between gap-4">
+                <div class="grid gap-1">
+                    <p class="text-sm text-muted">Сабақтар</p>
+                    <h3 class="text-lg font-semibold">Орташа көрсеткіш</h3>
+                </div>
+                <div class="w-11 h-11 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 6v6l4 2" />
+                        <circle cx="12" cy="12" r="9" />
+                    </svg>
+                </div>
+            </div>
+
+            <div class="mt-5 flex items-center justify-between gap-4">
+                <div
+                    class="radial-progress bg-amber-50 text-amber-600 border-8 border-amber-100 font-semibold"
+                    style="--value: {{ statistics.lesson_percentage|floatformat:0 }}; --size: 5.5rem; --thickness: 0.5rem;"
+                    aria-valuenow="{{ statistics.lesson_percentage|floatformat:0 }}"
+                    role="progressbar"
+                >
+                    {{ statistics.lesson_percentage|floatformat:0 }}%
+                </div>
+
+                <div class="flex flex-col items-end gap-2">
+                    <span class="text-sm text-muted">Орташа баға</span>
+                    <div class="inline-flex items-center gap-2 bg-secondary-50 rounded-2xl px-4 py-2 border border-border-200 font-semibold">
+                        {{ statistics.lesson_rating }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chapters accordion -->
+    <div class="rounded-3xl border border-border-200 bg-white p-5 shadow-sm grid gap-5">
+        <div>
+            <h2 class="text-xl font-semibold">Бөлімдер мен сабақтар</h2>
+            <p class="text-sm text-muted mt-1">
+                Әр бөлім ішіндегі сабақтар мен тапсырма нәтижелері
+            </p>
+        </div>
+
+        <div id="teacher-chapter-accordion" data-accordion="collapse" class="grid gap-4">
+            {% for block in chapter_blocks %}
+                <div class="rounded-3xl border border-border-200 overflow-hidden">
+                    <h2 id="teacher-chapter-heading-{{ block.instance.id }}">
+                        <button
+                            type="button"
+                            class="flex items-center justify-between w-full gap-4 p-5 text-left bg-white hover:bg-secondary-50 transition-all"
+                            data-accordion-target="#teacher-chapter-body-{{ block.instance.id }}"
+                            aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}"
+                            aria-controls="teacher-chapter-body-{{ block.instance.id }}"
+                        >
+                            <div class="grid gap-3 min-w-0">
+                                <div class="flex flex-wrap items-center gap-3">
+                                    <span class="inline-flex items-center justify-center w-10 h-10 rounded-2xl bg-primary-100 text-primary-700 font-semibold">
+                                        {{ block.instance.chapter.order }}
+                                    </span>
+                                    <div class="min-w-0">
+                                        <h3 class="text-lg font-semibold truncate">
+                                            {{ block.instance.chapter.name }}
+                                        </h3>
+                                        <div class="flex flex-wrap items-center gap-2 mt-1 text-sm text-muted">
+                                            <span>{{ block.completed_lesson_count }}/{{ block.lesson_count }} сабақ аяқталған</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex flex-wrap items-center justify-end gap-3 shrink-0">
+                                <div class="inline-flex items-center gap-2 rounded-2xl bg-secondary-50 px-4 py-2 border border-border-200 text-sm font-medium">
+                                    Баға: {{ block.instance.rating }}
+                                </div>
+                                <div
+                                    class="radial-progress bg-primary-50 text-xs text-primary-600 border-4 border-primary-100"
+                                    style="--value: {{ block.instance.percentage|floatformat:0 }}; --size: 3.5rem; --thickness: 0.35rem;"
+                                    aria-valuenow="{{ block.instance.percentage|floatformat:0 }}"
+                                    role="progressbar"
+                                >
+                                    {{ block.instance.percentage|floatformat:0 }}%
+                                </div>
+                            </div>
+                        </button>
+                    </h2>
+
+                    <div
+                        id="teacher-chapter-body-{{ block.instance.id }}"
+                        class="{% if not forloop.first %}hidden{% endif %} border-t border-border-200 bg-secondary-50/40"
+                        aria-labelledby="teacher-chapter-heading-{{ block.instance.id }}"
+                    >
+                        <div class="p-4 md:p-5 grid gap-4">
+                            {% for lesson_card in block.lessons %}
+                                <div class="rounded-3xl border border-border-200 bg-white p-4 md:p-5">
+                                    <div class="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4">
+                                        <div class="grid gap-2">
+                                            <div class="flex flex-wrap items-center gap-2">
+                                                <span class="inline-flex items-center justify-center w-9 h-9 rounded-2xl bg-amber-100 text-amber-700 font-semibold">
+                                                    {{ lesson_card.instance.lesson.order }}
+                                                </span>
+                                                <h4 class="text-base md:text-lg font-semibold">
+                                                    {{ lesson_card.instance.lesson.title }}
+                                                </h4>
+                                            </div>
+
+                                            <div class="flex flex-wrap items-center gap-2 text-sm">
+                                                {% if lesson_card.instance.is_completed %}
+                                                    <span class="inline-flex items-center gap-2 rounded-2xl bg-emerald-100 px-3 py-2 text-emerald-700">
+                                                        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                                        Аяқталды
+                                                    </span>
+                                                {% elif lesson_card.instance.status == 'in-progress' %}
+                                                    <span class="inline-flex items-center gap-2 rounded-2xl bg-sky-100 px-3 py-2 text-sky-700">
+                                                        <span class="w-2 h-2 rounded-full bg-sky-500"></span>
+                                                        Өтілуде
+                                                    </span>
+                                                {% else %}
+                                                    <span class="inline-flex items-center gap-2 rounded-2xl bg-secondary-100 px-3 py-2 text-muted">
+                                                        <span class="w-2 h-2 rounded-full bg-secondary-400"></span>
+                                                        Басталмаған
+                                                    </span>
+                                                {% endif %}
+
+                                                <span class="inline-flex items-center gap-2 rounded-2xl bg-secondary-100 px-3 py-2 text-muted">
+                                                    Тапсырмалар: {{ lesson_card.completed_task_count }}/{{ lesson_card.task_count }}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <div class="flex flex-wrap items-center gap-3">
+                                            <div class="inline-flex items-center gap-2 rounded-2xl bg-secondary-50 px-4 py-2 border border-border-200 text-sm font-medium">
+                                                Баға: {{ lesson_card.instance.rating }}
+                                            </div>
+
+                                            <div
+                                                class="radial-progress bg-primary-50 text-xs text-primary-600 border-4 border-primary-100"
+                                                style="--value: {{ lesson_card.instance.percentage|floatformat:0 }}; --size: 3.5rem; --thickness: 0.35rem;"
+                                                aria-valuenow="{{ lesson_card.instance.percentage|floatformat:0 }}"
+                                                role="progressbar"
+                                            >
+                                                {{ lesson_card.instance.percentage|floatformat:0 }}%
+                                            </div>
+
+                                            <button
+                                                type="button"
+                                                data-modal-target="lessonModal-{{ lesson_card.instance.id }}"
+                                                data-modal-toggle="lessonModal-{{ lesson_card.instance.id }}"
+                                                class="inline-flex items-center justify-center rounded-2xl bg-primary-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-primary-700 transition-all"
+                                            >
+                                                Нәтижелерді көру
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Lesson modal -->
+                                <div
+                                    id="lessonModal-{{ lesson_card.instance.id }}"
+                                    tabindex="-1"
+                                    aria-hidden="true"
+                                    class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-start w-full md:inset-0 h-[100dvh] max-h-full bg-slate-950/40 p-4"
+                                >
+                                    <div class="relative w-full max-w-6xl max-h-full mt-4">
+                                        <div class="relative bg-white rounded-3xl shadow-sm border border-border-200 overflow-hidden">
+                                            <!-- Header -->
+                                            <div class="flex items-start justify-between gap-4 p-5 md:p-6 border-b border-border-200">
+                                                <div class="grid gap-2">
+                                                    <h3 class="text-xl md:text-2xl font-semibold">
+                                                        {{ lesson_card.instance.lesson.order }}-сабақ:
+                                                        {{ lesson_card.instance.lesson.title }}
+                                                    </h3>
+
+                                                    <div class="flex flex-wrap items-center gap-2 text-sm text-muted">
+                                                        <span class="inline-flex items-center gap-2 rounded-2xl bg-secondary-100 px-3 py-2">
+                                                            Бөлім: {{ block.instance.chapter.name }}
+                                                        </span>
+                                                        <span class="inline-flex items-center gap-2 rounded-2xl bg-secondary-100 px-3 py-2">
+                                                            Баға: {{ lesson_card.instance.rating }}
+                                                        </span>
+                                                        <span class="inline-flex items-center gap-2 rounded-2xl bg-secondary-100 px-3 py-2">
+                                                            Пайыз: {{ lesson_card.instance.percentage|floatformat:2 }}%
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                <button
+                                                    type="button"
+                                                    class="text-muted bg-transparent hover:bg-secondary-100 hover:text-foreground rounded-2xl text-sm w-10 h-10 inline-flex justify-center items-center transition-all"
+                                                    data-modal-hide="lessonModal-{{ lesson_card.instance.id }}"
+                                                >
+                                                    <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                            d="m1 1 12 12M13 1 1 13"/>
+                                                    </svg>
+                                                </button>
+                                            </div>
+
+                                            <!-- Body -->
+                                            <div class="p-5 md:p-6 max-h-[75vh] overflow-y-auto grid gap-6">
+                                                <!-- Lesson summary -->
+                                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                                    <div class="rounded-3xl border border-border-200 bg-secondary-50 p-5">
+                                                        <p class="text-sm text-muted">Сабақ бағасы</p>
+                                                        <h4 class="text-3xl font-bold mt-2">{{ lesson_card.instance.rating }}</h4>
+                                                    </div>
+
+                                                    <div class="rounded-3xl border border-border-200 bg-secondary-50 p-5">
+                                                        <p class="text-sm text-muted">Сабақ прогресі</p>
+                                                        <h4 class="text-3xl font-bold mt-2">{{ lesson_card.instance.percentage|floatformat:0 }}%</h4>
+                                                    </div>
+
+                                                    <div class="rounded-3xl border border-border-200 bg-secondary-50 p-5">
+                                                        <p class="text-sm text-muted">Тапсырма орындалуы</p>
+                                                        <h4 class="text-3xl font-bold mt-2">{{ lesson_card.completed_task_count }}/{{ lesson_card.task_count }}</h4>
+                                                    </div>
+                                                </div>
+
+                                                {% if lesson_card.task_tabs %}
+                                                    <div class="rounded-3xl border border-border-200 overflow-hidden">
+                                                        <!-- Tabs -->
+                                                        <div class="px-4 md:px-6 pt-5 bg-white border-b border-border-200">
+                                                            <ul
+                                                                class="flex -mb-px text-sm font-medium text-center overflow-x-auto"
+                                                                id="task-tab-{{ lesson_card.instance.id }}"
+                                                                data-tabs-toggle="#task-tab-content-{{ lesson_card.instance.id }}"
+                                                                role="tablist"
+                                                                data-tabs-inactive-classes="text-muted border-transparent hover:border-border-200"
+                                                                data-tabs-active-classes="text-primary-600 border-primary-600"
+                                                            >
+                                                                {% for task in lesson_card.task_tabs %}
+                                                                    <li class="me-2 whitespace-nowrap" role="presentation">
+                                                                        <button
+                                                                            class="inline-block px-4 py-4 border-b-2 rounded-t-xl"
+                                                                            id="task-tab-trigger-{{ lesson_card.instance.id }}-{{ task.id }}"
+                                                                            data-tabs-target="#task-tab-pane-{{ lesson_card.instance.id }}-{{ task.id }}"
+                                                                            type="button"
+                                                                            role="tab"
+                                                                            aria-controls="task-tab-pane-{{ lesson_card.instance.id }}-{{ task.id }}"
+                                                                            aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
+                                                                        >
+                                                                            {{ forloop.counter }}. {{ task.task_type_display }}
+                                                                        </button>
+                                                                    </li>
+                                                                {% endfor %}
+                                                            </ul>
+                                                        </div>
+
+                                                        <!-- Tabs content -->
+                                                        <div id="task-tab-content-{{ lesson_card.instance.id }}" class="p-4 md:p-6 bg-white">
+                                                            {% for task in lesson_card.task_tabs %}
+                                                                <div
+                                                                    class="{% if not forloop.first %}hidden{% endif %} grid gap-5"
+                                                                    id="task-tab-pane-{{ lesson_card.instance.id }}-{{ task.id }}"
+                                                                    role="tabpanel"
+                                                                    aria-labelledby="task-tab-trigger-{{ lesson_card.instance.id }}-{{ task.id }}"
+                                                                >
+                                                                    <!-- Task top -->
+                                                                    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                                                                        <div class="grid gap-2">
+                                                                            <div class="flex flex-wrap items-center gap-2">
+                                                                                <h4 class="text-lg font-semibold">{{ task.task_type_display }}</h4>
+
+                                                                                {% if task.is_completed %}
+                                                                                    <span class="inline-flex items-center gap-2 rounded-2xl bg-emerald-100 px-3 py-1.5 text-xs font-medium text-emerald-700">
+                                                                                        Аяқталды
+                                                                                    </span>
+                                                                                {% else %}
+                                                                                    <span class="inline-flex items-center gap-2 rounded-2xl bg-amber-100 px-3 py-1.5 text-xs font-medium text-amber-700">
+                                                                                        Аяқталмаған
+                                                                                    </span>
+                                                                                {% endif %}
+                                                                            </div>
+                                                                        </div>
+
+                                                                        <div class="flex flex-wrap items-center gap-3">
+                                                                            <div class="inline-flex items-center gap-2 rounded-2xl bg-amber-50 border border-amber-200 px-4 py-3 font-semibold text-amber-800">
+                                                                                {{ task.rating }}/{{ task.max_rating }} балл
+                                                                            </div>
+
+                                                                            <div
+                                                                                class="radial-progress bg-primary-50 text-xs text-primary-600 border-4 border-primary-100"
+                                                                                style="--value: {{ task.percentage|floatformat:0 }}; --size: 3.8rem; --thickness: 0.35rem;"
+                                                                                aria-valuenow="{{ task.percentage|floatformat:0 }}"
+                                                                                role="progressbar"
+                                                                            >
+                                                                                {{ task.percentage|floatformat:0 }}%
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <!-- Theory -->
+                                                                    {% if task.task_type == 'theory' %}
+                                                                        <div class="grid gap-4">
+                                                                            {% for theory_item in task.theories %}
+                                                                                <div class="rounded-3xl border border-border-200 bg-secondary-50 p-5">
+                                                                                    <div class="flex items-start justify-between gap-4">
+                                                                                        <div class="grid gap-2">
+                                                                                            <h5 class="font-semibold">Теориялық материал {{ forloop.counter }}</h5>
+                                                                                            {% if theory_item.theory.content %}
+                                                                                                <div class="text-sm text-muted leading-6">
+                                                                                                    {{ theory_item.theory.content|truncatechars_html:350|safe }}
+                                                                                                </div>
+                                                                                            {% endif %}
+                                                                                        </div>
+
+                                                                                        {% if theory_item.is_completed %}
+                                                                                            <span class="inline-flex items-center gap-2 rounded-2xl bg-emerald-100 px-3 py-2 text-xs font-medium text-emerald-700">
+                                                                                                Оқылды
+                                                                                            </span>
+                                                                                        {% else %}
+                                                                                            <span class="inline-flex items-center gap-2 rounded-2xl bg-amber-100 px-3 py-2 text-xs font-medium text-amber-700">
+                                                                                                Оқылмаған
+                                                                                            </span>
+                                                                                        {% endif %}
+                                                                                    </div>
+                                                                                </div>
+                                                                            {% empty %}
+                                                                                <div class="rounded-3xl border border-dashed border-border-200 p-8 text-center text-sm text-muted">
+                                                                                    Теориялық материал табылмады
+                                                                                </div>
+                                                                            {% endfor %}
+                                                                        </div>
+                                                                    {% endif %}
+
+                                                                    <!-- Video -->
+                                                                    {% if task.task_type == 'video' %}
+                                                                        <div class="grid gap-4">
+                                                                            {% for video_item in task.videos %}
+                                                                                <div class="rounded-3xl border border-border-200 bg-secondary-50 p-5">
+                                                                                    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                                                                                        <div class="grid gap-2">
+                                                                                            <h5 class="font-semibold">Видеоматериал {{ forloop.counter }}</h5>
+                                                                                            <p class="text-sm text-muted">
+                                                                                                Қаралған уақыт: {{ video_item.watched_seconds }} сек
+                                                                                            </p>
+                                                                                        </div>
+
+                                                                                        {% if video_item.is_completed %}
+                                                                                            <span class="inline-flex items-center gap-2 rounded-2xl bg-emerald-100 px-3 py-2 text-xs font-medium text-emerald-700">
+                                                                                                Аяқталған
+                                                                                            </span>
+                                                                                        {% else %}
+                                                                                            <span class="inline-flex items-center gap-2 rounded-2xl bg-amber-100 px-3 py-2 text-xs font-medium text-amber-700">
+                                                                                                Аяқталмаған
+                                                                                            </span>
+                                                                                        {% endif %}
+                                                                                    </div>
+                                                                                </div>
+                                                                            {% empty %}
+                                                                                <div class="rounded-3xl border border-dashed border-border-200 p-8 text-center text-sm text-muted">
+                                                                                    Видео материал табылмады
+                                                                                </div>
+                                                                            {% endfor %}
+                                                                        </div>
+                                                                    {% endif %}
+
+                                                                    <!-- Test -->
+                                                                    {% if task.task_type == 'test' %}
+                                                                        <div class="grid gap-5">
+                                                                            {% for question in task.questions %}
+                                                                                <section class="overflow-hidden rounded-[28px] border border-border-200 bg-secondary-50/40">
+                                                                                    <div class="p-5 md:p-6 grid gap-5">
+                                                                                        <div class="flex items-start gap-4">
+                                                                                            <div class="w-11 h-11 rounded-2xl bg-primary-100 text-primary-600 flex items-center justify-center shrink-0 font-bold">
+                                                                                                {{ forloop.counter }}
+                                                                                            </div>
+
+                                                                                            <div class="grid gap-2 min-w-0">
+                                                                                                <div class="flex flex-wrap items-center gap-2">
+                                                                                                    <h5 class="font-semibold text-foreground">Сұрақ</h5>
+                                                                                                    <span class="inline-flex items-center rounded-full bg-secondary-100 px-3 py-1 text-xs font-medium text-muted">
+                                                                                                        {{ question.question_type_display }}
+                                                                                                    </span>
+                                                                                                </div>
+
+                                                                                                <div class="richtext text-foreground leading-7">
+                                                                                                    {{ question.text|safe }}
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        </div>
+
+                                                                                        <div class="grid gap-3">
+                                                                                            {% for option in question.options %}
+                                                                                                <div class="rounded-2xl border border-border-200 bg-white px-4 py-4">
+                                                                                                    <div class="flex items-start gap-3">
+                                                                                                        <div class="pt-0.5">
+                                                                                                            {% if question.question_type == 'simple' %}
+                                                                                                                <input type="radio" disabled {% if option.is_selected %}checked{% endif %}>
+                                                                                                            {% else %}
+                                                                                                                <input type="checkbox" disabled {% if option.is_selected %}checked{% endif %}>
+                                                                                                            {% endif %}
+                                                                                                        </div>
+
+                                                                                                        <div class="grid gap-2 min-w-0">
+                                                                                                            <div class="leading-6 text-foreground">
+                                                                                                                {{ option.text|safe }}
+                                                                                                            </div>
+
+                                                                                                            <div class="flex flex-wrap items-center gap-2">
+                                                                                                                {% if option.is_correct %}
+                                                                                                                    <span class="inline-flex items-center rounded-full bg-emerald-100 text-emerald-700 px-3 py-1 text-xs font-medium">
+                                                                                                                        Дұрыс жауап
+                                                                                                                    </span>
+                                                                                                                {% endif %}
+
+                                                                                                                {% if option.is_selected and not option.is_correct %}
+                                                                                                                    <span class="inline-flex items-center rounded-full bg-red-100 text-red-700 px-3 py-1 text-xs font-medium">
+                                                                                                                        Қате таңдалды
+                                                                                                                    </span>
+                                                                                                                {% endif %}
+
+                                                                                                                {% if option.is_selected and option.is_correct %}
+                                                                                                                    <span class="inline-flex items-center rounded-full bg-primary-100 text-primary-700 px-3 py-1 text-xs font-medium">
+                                                                                                                        Таңдалған дұрыс жауап
+                                                                                                                    </span>
+                                                                                                                {% endif %}
+                                                                                                            </div>
+                                                                                                        </div>
+                                                                                                    </div>
+                                                                                                </div>
+                                                                                            {% endfor %}
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </section>
+                                                                            {% empty %}
+                                                                                <div class="rounded-3xl border border-dashed border-border-200 p-8 text-center text-sm text-muted">
+                                                                                    Тест сұрақтары табылмады
+                                                                                </div>
+                                                                            {% endfor %}
+                                                                        </div>
+                                                                    {% endif %}
+
+                                                                    <!-- Simulator -->
+                                                                    {% if task.task_type == 'simulator' %}
+                                                                        <div class="grid gap-4">
+                                                                            {% for sim_item in task.simulators %}
+                                                                                <div class="rounded-3xl border border-border-200 bg-secondary-50 p-5">
+                                                                                    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                                                                                        <div class="grid gap-2">
+                                                                                            <h5 class="font-semibold">Симулятор {{ forloop.counter }}</h5>
+                                                                                        </div>
+
+                                                                                        {% if sim_item.is_completed %}
+                                                                                            <span class="inline-flex items-center gap-2 rounded-2xl bg-emerald-100 px-3 py-2 text-xs font-medium text-emerald-700">
+                                                                                                Орындалды
+                                                                                            </span>
+                                                                                        {% else %}
+                                                                                            <span class="inline-flex items-center gap-2 rounded-2xl bg-amber-100 px-3 py-2 text-xs font-medium text-amber-700">
+                                                                                                Орындалмаған
+                                                                                            </span>
+                                                                                        {% endif %}
+                                                                                    </div>
+                                                                                    <div class="simulator-frame aspect-video bg-white mt-4">
+                                                                                        <iframe
+                                                                                            src="{{ sim_item.simulator.url }}"
+                                                                                            class="w-full h-full"
+                                                                                            style="border:0;"
+                                                                                            allowfullscreen
+                                                                                        ></iframe>
+                                                                                    </div>
+                                                                                </div>
+                                                                            {% empty %}
+                                                                                <div class="rounded-3xl border border-dashed border-border-200 p-8 text-center text-sm text-muted">
+                                                                                    Симулятор материалы табылмады
+                                                                                </div>
+                                                                            {% endfor %}
+                                                                        </div>
+                                                                    {% endif %}
+                                                                </div>
+                                                            {% endfor %}
+                                                        </div>
+                                                    </div>
+                                                {% else %}
+                                                    <div class="rounded-3xl border border-dashed border-border-200 p-10 text-center text-sm text-muted">
+                                                        Бұл сабақта тапсырмалар табылмады
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% empty %}
+                                <div class="rounded-3xl border border-dashed border-border-200 p-10 text-center text-sm text-muted bg-white">
+                                    Бұл бөлімде сабақтар жоқ
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="rounded-3xl border border-dashed border-border-200 p-12 text-center text-sm text-muted">
+                    Бұл пәнге байланысты бөлімдер табылмады
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+{% endblock base_layout %}

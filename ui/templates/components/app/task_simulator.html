@@ -1,0 +1,169 @@
+<div class="w-full mx-auto">
+    {% if user_task.is_completed %}
+        <div class="grid gap-6">
+            <!-- Status bar -->
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                <div class="inline-flex items-center gap-2 rounded-2xl bg-amber-50 border border-amber-200 px-4 py-3 font-semibold text-amber-800">
+                    <svg class="w-5 h-5 text-amber-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M13.849 4.22c-.684-1.626-3.014-1.626-3.698 0L8.397 8.387l-4.552.361c-1.775.14-2.495 2.331-1.142 3.477l3.468 2.937-1.06 4.392c-.413 1.713 1.472 3.067 2.992 2.149L12 19.35l3.897 2.354c1.52.918 3.405-.436 2.992-2.15l-1.06-4.39 3.468-2.938c1.353-1.146.633-3.336-1.142-3.477l-4.552-.36-1.754-4.17Z" />
+                    </svg>
+                    <span>{{ user_task.rating }}/{{ user_task.task.rating }} балл</span>
+                </div>
+
+                <div class="inline-flex items-center gap-2 rounded-2xl bg-emerald-50 border border-emerald-200 px-4 py-3 font-semibold text-emerald-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="m9 12 2 2 4-4" />
+                    </svg>
+                    <span>Симулятор орындалды</span>
+                </div>
+            </div>
+
+            <!-- Simulator cards -->
+            <div class="grid gap-6">
+                {% for us in user_simulators %}
+                    <section class="bg-white">
+                        {% if us.simulator.description %}
+                            <div class="rounded-3xl bg-secondary-50 border border-border-200 p-5 md:p-6">
+                                <div class="richtext leading-7 text-foreground">
+                                    {{ us.simulator.description|safe }}
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        {% if us.simulator.url %}
+                            <div class="overflow-hidden rounded-[24px] border border-border-200 bg-white shadow-sm">
+                                <div class="flex items-center justify-between gap-3 border-b border-border-200 bg-secondary-50 px-4 py-3">
+                                    <div class="flex items-center gap-2 text-sm text-muted">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                            stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                            <rect x="3" y="3" width="18" height="14" rx="2" />
+                                            <path d="M8 21h8" />
+                                            <path d="M12 17v4" />
+                                        </svg>
+                                        <span>Симулятор терезесі</span>
+                                    </div>
+
+                                    <button
+                                        type="button"
+                                        onclick="openSimulatorFullscreen(this)"
+                                        class="inline-flex items-center gap-2 rounded-xl bg-white border border-border-200 px-3 py-2 text-sm font-medium hover:bg-secondary-100 transition-all"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                            fill="none" stroke="currentColor" stroke-width="1.5">
+                                            <path d="M8 3H5a2 2 0 0 0-2 2v3"/>
+                                            <path d="M16 3h3a2 2 0 0 1 2 2v3"/>
+                                            <path d="M8 21H5a2 2 0 0 1-2-2v-3"/>
+                                            <path d="M16 21h3a2 2 0 0 0 2-2v-3"/>
+                                        </svg>
+                                        <span>Толық экран</span>
+                                    </button>
+                                </div>
+
+                                <div class="simulator-frame aspect-video bg-white">
+                                    <iframe
+                                        src="{{ us.simulator.url }}"
+                                        class="w-full h-full"
+                                        style="border:0;"
+                                        allowfullscreen
+                                    ></iframe>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </section>
+                {% endfor %}
+            </div>
+        </div>
+
+    {% else %}
+        <form method="post" class="grid gap-6">
+            {% csrf_token %}
+
+            <div class="grid gap-6">
+                {% for us in user_simulators %}
+                    <section class="bg-white">
+                        {% if us.simulator.description %}
+                            <div class="rounded-3xl bg-secondary-50 border border-border-200 p-5 md:p-6">
+                                <div class="richtext leading-7 text-foreground">
+                                    {{ us.simulator.description|safe }}
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        {% if us.simulator.url %}
+                            <div class="overflow-hidden rounded-[24px] border border-border-200 bg-white shadow-sm">
+                                <div class="flex items-center justify-between gap-3 border-b border-border-200 bg-secondary-50 px-4 py-3">
+                                    <div class="flex items-center gap-2 text-sm text-muted">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                            stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                            <rect x="3" y="3" width="18" height="14" rx="2" />
+                                            <path d="M8 21h8" />
+                                            <path d="M12 17v4" />
+                                        </svg>
+                                        <span>Симулятор терезесі</span>
+                                    </div>
+
+                                    <button
+                                        type="button"
+                                        onclick="openSimulatorFullscreen(this)"
+                                        class="inline-flex items-center gap-2 rounded-xl bg-white border border-border-200 px-3 py-2 text-sm font-medium hover:bg-secondary-100 transition-all"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                            fill="none" stroke="currentColor" stroke-width="1.5">
+                                            <path d="M8 3H5a2 2 0 0 0-2 2v3"/>
+                                            <path d="M16 3h3a2 2 0 0 1 2 2v3"/>
+                                            <path d="M8 21H5a2 2 0 0 1-2-2v-3"/>
+                                            <path d="M16 21h3a2 2 0 0 0 2-2v-3"/>
+                                        </svg>
+                                        <span>Толық экран</span>
+                                    </button>
+                                </div>
+
+                                <div class="simulator-frame aspect-video bg-white">
+                                    <iframe
+                                        src="{{ us.simulator.url }}"
+                                        class="w-full h-full"
+                                        style="border:0;"
+                                        allowfullscreen
+                                    ></iframe>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </section>
+                {% endfor %}
+            </div>
+
+            <div class="flex justify-center pt-2">
+                <button 
+                    type="submit" 
+                    class="inline-flex items-center justify-center gap-2 rounded-2xl bg-primary-600 text-white px-6 py-3 font-semibold hover:bg-primary-700 focus:outline-none focus:ring-4 focus:ring-primary-300 transition-all shadow-sm"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="m9 12 2 2 4-4" />
+                    </svg>
+                    <span>Симуляторды аяқтадым</span>
+                </button>
+            </div>
+        </form>
+    {% endif %}
+</div>
+<script>
+    function openSimulatorFullscreen(button) {
+
+        const container = button.closest("section").querySelector(".simulator-frame");
+
+        if (!container) return;
+
+        if (container.requestFullscreen) {
+            container.requestFullscreen();
+        } else if (container.webkitRequestFullscreen) {
+            container.webkitRequestFullscreen();
+        } else if (container.msRequestFullscreen) {
+            container.msRequestFullscreen();
+        }
+
+    }
+</script>

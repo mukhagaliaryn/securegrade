@@ -1,0 +1,484 @@
+{% extends 'layouts/base_layout.html' %}
+
+{% block title %}Оқытушының басқару панелі{% endblock title %}
+
+{% block base_layout %}
+<div class="max-w-7xl py-6 px-4 mx-auto grid gap-6">
+
+    <!-- Header -->
+    <div class="rounded-3xl border border-border-200 bg-white p-6 shadow-sm">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+            <div class="flex items-center gap-4">
+                {% if user.avatar %}
+                    <img 
+                        class="w-20 h-20 rounded-full object-cover"
+                        src="{{ user.avatar.url }}" 
+                        alt="user photo"
+                    >
+                {% else %}
+                    <div class="w-20 h-20 rounded-full bg-secondary-100 flex items-center justify-center text-2xl font-semibold text-foreground">
+                        {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+                    </div>
+                {% endif %}
+
+                <div class="grid gap-2">
+                    <div class="flex flex-wrap items-center gap-3">
+                        <h1 class="text-2xl md:text-3xl font-semibold">
+                            👋 {{ user.first_name }} {{ user.last_name }}
+                        </h1>
+
+                        <div class="inline-flex items-center gap-2 rounded-2xl bg-primary-100 px-3 py-1 text-sm font-medium text-primary-700">
+                            <span class="w-2 h-2 rounded-full bg-primary-600"></span>
+                            {{ user.get_user_type_display }}
+                        </div>
+                    </div>
+
+                    <p class="text-sm text-muted">
+                        Бұл бөлімде білім алушылардың пәндік үлгерімі мен курс барысын бақылай аласыз.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Generic cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        <div class="rounded-3xl border border-border-200 bg-white p-5 shadow-sm">
+            <div class="flex items-start justify-between gap-4">
+                <div class="grid gap-1">
+                    <p class="text-sm text-muted">Барлық білім алушылар</p>
+                    <h3 class="text-lg font-semibold">Жалпы сан</h3>
+                </div>
+
+                <div class="w-11 h-11 rounded-2xl bg-primary-100 text-primary-600 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="mt-5">
+                <h2 class="text-4xl font-bold">{{ generics.total_students_count }}</h2>
+                <p class="mt-1 text-sm text-muted">Жүйедегі барлық білім алушылар саны</p>
+            </div>
+        </div>
+
+        <div class="rounded-3xl border border-border-200 bg-white p-5 shadow-sm">
+            <div class="flex items-start justify-between gap-4">
+                <div class="grid gap-1">
+                    <p class="text-sm text-muted">Пәнге тіркелгендер</p>
+                    <h3 class="text-lg font-semibold">Белсенді білім алушылар</h3>
+                </div>
+
+                <div class="w-11 h-11 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m16 11 2 2 4-4"/>
+                        <path d="M12 20H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h7"/>
+                        <path d="M15 4h6v6"/>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="mt-5">
+                <h2 class="text-4xl font-bold">{{ generics.enrolled_students_count }}</h2>
+                <p class="mt-1 text-sm text-muted">Кемінде бір пәнге тіркелген білім алушылар саны</p>
+            </div>
+        </div>
+
+        <div class="rounded-3xl border border-border-200 bg-white p-5 shadow-sm">
+            <div class="flex items-start justify-between gap-4">
+                <div class="grid gap-1">
+                    <p class="text-sm text-muted">Пәндер саны</p>
+                    <h3 class="text-lg font-semibold">Оқу бағдарламалары</h3>
+                </div>
+
+                <div class="w-11 h-11 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 7v14"/>
+                        <path d="M3 18h18"/>
+                        <path d="M7 3h10l4 4H3z"/>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="mt-5">
+                <h2 class="text-4xl font-bold">{{ generics.subjects_count }}</h2>
+                <p class="mt-1 text-sm text-muted">Жүйеде ашық тұрған пәндер саны</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Overall statistics -->
+    <div class="rounded-3xl border border-border-200 bg-white p-5 shadow-sm grid gap-5">
+        <div class="flex items-center justify-between gap-4">
+            <div>
+                <h2 class="text-xl font-semibold">Қолданушы пәндері бойынша жалпы көрсеткіштер</h2>
+                <p class="text-sm text-muted mt-1">
+                    Пән, бөлім және сабақ деңгейіндегі ортақ үлгерім көрсеткіштері
+                </p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <!-- Subjects -->
+            <div class="rounded-3xl border border-border-200 bg-secondary-50/60 p-5">
+                <div class="flex items-start justify-between gap-4">
+                    <div class="grid gap-1">
+                        <p class="text-sm text-muted">Пәндер</p>
+                        <h3 class="text-lg font-semibold">Пәндік орташа көрсеткіш</h3>
+                    </div>
+                    <div class="w-11 h-11 rounded-2xl bg-primary-100 text-primary-600 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 7v14"/>
+                            <path d="M3 18h18"/>
+                            <path d="M7 3h10l4 4H3z"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="mt-5 flex items-center justify-between gap-4">
+                    <div 
+                        class="radial-progress bg-primary-50 text-primary-600 border-8 border-primary-100 font-semibold"
+                        style="--value: {{ statistics.subject_percentage|floatformat:0 }}; --size: 5.5rem; --thickness: 0.5rem;"
+                        aria-valuenow="{{ statistics.subject_percentage|floatformat:0 }}" role="progressbar"
+                    >
+                        {{ statistics.subject_percentage|floatformat:0 }}%
+                    </div>
+
+                    <div class="flex flex-col items-end gap-2">
+                        <span class="text-sm text-muted">Орташа баға</span>
+                        <div class="inline-flex items-center gap-2 bg-white rounded-2xl px-4 py-2 border border-border-200 font-semibold">
+                            <svg class="w-5 h-5 text-amber-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
+                                height="24" fill="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M13.849 4.22c-.684-1.626-3.014-1.626-3.698 0L8.397 8.387l-4.552.361c-1.775.14-2.495 2.331-1.142 3.477l3.468 2.937-1.06 4.392c-.413 1.713 1.472 3.067 2.992 2.149L12 19.35l3.897 2.354c1.52.918 3.405-.436 2.992-2.15l-1.06-4.39 3.468-2.938c1.353-1.146.633-3.336-1.142-3.477l-4.552-.36-1.754-4.17Z" />
+                            </svg>
+                            {{ statistics.subject_rating }} ({{ statistics.subject_rating_5 }})
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chapters -->
+            <div class="rounded-3xl border border-border-200 bg-secondary-50/60 p-5">
+                <div class="flex items-start justify-between gap-4">
+                    <div class="grid gap-1">
+                        <p class="text-sm text-muted">Бөлімдер</p>
+                        <h3 class="text-lg font-semibold">Бөлімдік орташа көрсеткіш</h3>
+                    </div>
+                    <div class="w-11 h-11 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 7h18" />
+                            <path d="M3 12h18" />
+                            <path d="M3 17h12" />
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="mt-5 flex items-center justify-between gap-4">
+                    <div 
+                        class="radial-progress bg-emerald-50 text-emerald-600 border-8 border-emerald-100 font-semibold"
+                        style="--value: {{ statistics.chapter_percentage|floatformat:0 }}; --size: 5.5rem; --thickness: 0.5rem;"
+                        aria-valuenow="{{ statistics.chapter_percentage|floatformat:0 }}" role="progressbar"
+                    >
+                        {{ statistics.chapter_percentage|floatformat:0 }}%
+                    </div>
+
+                    <div class="flex flex-col items-end gap-2">
+                        <span class="text-sm text-muted">Орташа баға</span>
+                        <div class="inline-flex items-center gap-2 bg-white rounded-2xl px-4 py-2 border border-border-200 font-semibold">
+                            <svg class="w-5 h-5 text-amber-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
+                                height="24" fill="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M13.849 4.22c-.684-1.626-3.014-1.626-3.698 0L8.397 8.387l-4.552.361c-1.775.14-2.495 2.331-1.142 3.477l3.468 2.937-1.06 4.392c-.413 1.713 1.472 3.067 2.992 2.149L12 19.35l3.897 2.354c1.52.918 3.405-.436 2.992-2.15l-1.06-4.39 3.468-2.938c1.353-1.146.633-3.336-1.142-3.477l-4.552-.36-1.754-4.17Z" />
+                            </svg>
+                            {{ statistics.chapter_rating }} ({{ statistics.chapter_rating_5 }})
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lessons -->
+            <div class="rounded-3xl border border-border-200 bg-secondary-50/60 p-5">
+                <div class="flex items-start justify-between gap-4">
+                    <div class="grid gap-1">
+                        <p class="text-sm text-muted">Сабақтар</p>
+                        <h3 class="text-lg font-semibold">Сабақтық орташа көрсеткіш</h3>
+                    </div>
+                    <div class="w-11 h-11 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 6v6l4 2" />
+                            <circle cx="12" cy="12" r="9" />
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="mt-5 flex items-center justify-between gap-4">
+                    <div 
+                        class="radial-progress bg-amber-50 text-amber-600 border-8 border-amber-100 font-semibold"
+                        style="--value: {{ statistics.lesson_percentage|floatformat:0 }}; --size: 5.5rem; --thickness: 0.5rem;"
+                        aria-valuenow="{{ statistics.lesson_percentage|floatformat:0 }}" role="progressbar"
+                    >
+                        {{ statistics.lesson_percentage|floatformat:0 }}%
+                    </div>
+
+                    <div class="flex flex-col items-end gap-2">
+                        <span class="text-sm text-muted">Орташа баға</span>
+                        <div class="inline-flex items-center gap-2 bg-white rounded-2xl px-4 py-2 border border-border-200 font-semibold">
+                            <svg class="w-5 h-5 text-amber-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
+                                height="24" fill="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M13.849 4.22c-.684-1.626-3.014-1.626-3.698 0L8.397 8.387l-4.552.361c-1.775.14-2.495 2.331-1.142 3.477l3.468 2.937-1.06 4.392c-.413 1.713 1.472 3.067 2.992 2.149L12 19.35l3.897 2.354c1.52.918 3.405-.436 2.992-2.15l-1.06-4.39 3.468-2.938c1.353-1.146.633-3.336-1.142-3.477l-4.552-.36-1.754-4.17Z" />
+                            </svg>
+                            {{ statistics.lesson_rating }} ({{ statistics.lesson_rating_5 }})
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- UserSubject list -->
+    <div class="rounded-3xl border border-border-200 bg-white p-5 shadow-sm grid gap-5">
+        <div class="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4">
+            <div>
+                <h2 class="text-xl font-semibold">Қолданушы пәндерінің тізімі</h2>
+                <p class="text-sm text-muted mt-1">
+                    Барлық тіркелген пәндер, олардың бағасы, пайызы және мәртебесі
+                </p>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <form method="get" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+            <div class="grid gap-2">
+                <label for="user" class="text-sm font-medium">Білім алушы бойынша фильтр</label>
+                <select 
+                    id="user"
+                    name="user"
+                    class="w-full rounded-2xl border border-border-200 bg-white px-4 py-3 text-sm focus:border-primary-500 focus:ring-primary-500"
+                >
+                    <option value="">Барлығы</option>
+                    {% for item in filter_users %}
+                        <option value="{{ item.id }}" {% if filters.user == item.id|stringformat:"s" %}selected{% endif %}>
+                            {% if item.first_name or item.last_name %}
+                                {{ item.first_name }} {{ item.last_name }}{% if item.username %} ({{ item.username }}){% endif %}
+                            {% else %}
+                                {{ item.username }}
+                            {% endif %}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="grid gap-2">
+                <label for="subject" class="text-sm font-medium">Пән бойынша фильтр</label>
+                <select 
+                    id="subject"
+                    name="subject"
+                    class="w-full rounded-2xl border border-border-200 bg-white px-4 py-3 text-sm focus:border-primary-500 focus:ring-primary-500"
+                >
+                    <option value="">Барлығы</option>
+                    {% for item in filter_subjects %}
+                        <option value="{{ item.id }}" {% if filters.subject == item.id|stringformat:"s" %}selected{% endif %}>
+                            {{ item.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="grid gap-2">
+                <label for="user_q" class="text-sm font-medium">Білім алушыны іздеу</label>
+                <input
+                    type="text"
+                    id="user_q"
+                    name="user_q"
+                    value="{{ filters.user_q }}"
+                    placeholder="Аты, тегі немесе username..."
+                    class="w-full rounded-2xl border border-border-200 bg-white px-4 py-3 text-sm focus:border-primary-500 focus:ring-primary-500"
+                >
+            </div>
+
+            <div class="grid gap-2">
+                <label for="subject_q" class="text-sm font-medium">Пәнді іздеу</label>
+                <input
+                    type="text"
+                    id="subject_q"
+                    name="subject_q"
+                    value="{{ filters.subject_q }}"
+                    placeholder="Пән атауы..."
+                    class="w-full rounded-2xl border border-border-200 bg-white px-4 py-3 text-sm focus:border-primary-500 focus:ring-primary-500"
+                >
+            </div>
+
+            <div class="md:col-span-2 xl:col-span-4 flex flex-wrap gap-3">
+                <button
+                    type="submit"
+                    class="inline-flex items-center justify-center rounded-2xl bg-primary-600 px-5 py-3 text-sm font-medium text-white hover:bg-primary-700 transition-all"
+                >
+                    Қолдану
+                </button>
+
+                <a
+                    href="{% url 'teacher:dashboard' %}"
+                    class="inline-flex items-center justify-center rounded-2xl border border-border-200 bg-white px-5 py-3 text-sm font-medium hover:bg-secondary-50 transition-all"
+                >
+                    Тазарту
+                </a>
+            </div>
+        </form>
+
+        <!-- Table -->
+        <div class="w-full overflow-x-auto">
+            <table class="w-full min-w-[1400px] text-sm text-left">
+                <thead>
+                    <tr class="border-b border-border-200 text-muted">
+                        <th class="px-4 py-4 font-medium min-w-[260px] whitespace-nowrap">Білім алушы</th>
+                        <th class="px-4 py-4 font-medium min-w-[180px] whitespace-nowrap">Пән</th>
+                        <th class="px-4 py-4 font-medium min-w-[140px] whitespace-nowrap">Бағасы</th>
+                        <th class="px-4 py-4 font-medium min-w-[220px] whitespace-nowrap">Пайыздық мөлшері</th>
+                        <th class="px-4 py-4 font-medium min-w-[140px] whitespace-nowrap">Статус</th>
+                        <th class="px-4 py-4 font-medium min-w-[150px] whitespace-nowrap">Басталған уақыты</th>
+                        <th class="px-4 py-4 font-medium min-w-[150px] whitespace-nowrap">Аяқталған уақыты</th>
+                        <th class="px-4 py-4 font-medium text-center min-w-[140px] whitespace-nowrap">Әрекеттер</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for item in user_subjects %}
+                        <tr class="border-b border-border-200 hover:bg-secondary-50/60 transition-all">
+                            <td class="px-4 py-4 align-middle min-w-[260px]">
+                                <div class="flex items-center gap-3 min-w-max">
+                                    {% if item.user.avatar %}
+                                        <img 
+                                            src="{{ item.user.avatar.url }}" 
+                                            alt="{{ item.user }}"
+                                            class="w-11 h-11 rounded-full object-cover shrink-0"
+                                        >
+                                    {% else %}
+                                        <div class="w-11 h-11 rounded-full bg-secondary-100 flex items-center justify-center text-sm font-semibold shrink-0">
+                                            {{ item.user.first_name|first|upper }}{{ item.user.last_name|first|upper }}
+                                        </div>
+                                    {% endif %}
+
+                                    <div class="grid gap-1 min-w-0">
+                                        <h4 class="font-medium text-foreground whitespace-nowrap">
+                                            {% if item.user.first_name or item.user.last_name %}
+                                                {{ item.user.first_name }} {{ item.user.last_name }}
+                                            {% else %}
+                                                {{ item.user.username }}
+                                            {% endif %}
+                                        </h4>
+                                        <p class="text-xs text-muted whitespace-nowrap">@{{ item.user.username }}</p>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <td class="px-4 py-4 align-middle min-w-[180px]">
+                                <div class="grid gap-1">
+                                    <span class="font-medium whitespace-nowrap">{{ item.subject.name }}</span>
+                                    <span class="text-xs text-muted whitespace-nowrap">ID: {{ item.subject.id }}</span>
+                                </div>
+                            </td>
+
+                            <td class="px-4 py-4 align-middle min-w-[140px]">
+                                <div class="inline-flex items-center gap-2 rounded-2xl bg-secondary-100 px-3 py-2 font-medium whitespace-nowrap">
+                                    <svg class="w-4 h-4 text-amber-500 shrink-0" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
+                                        height="24" fill="currentColor" viewBox="0 0 24 24">
+                                        <path
+                                            d="M13.849 4.22c-.684-1.626-3.014-1.626-3.698 0L8.397 8.387l-4.552.361c-1.775.14-2.495 2.331-1.142 3.477l3.468 2.937-1.06 4.392c-.413 1.713 1.472 3.067 2.992 2.149L12 19.35l3.897 2.354c1.52.918 3.405-.436 2.992-2.15l-1.06-4.39 3.468-2.938c1.353-1.146.633-3.336-1.142-3.477l-4.552-.36-1.754-4.17Z" />
+                                    </svg>
+                                    {{ item.rating }} ({{ item.rating_5 }})
+                                </div>
+                            </td>
+
+                            <td class="px-4 py-4 align-middle min-w-[220px]">
+                                <div class="flex items-center gap-3 min-w-max">
+                                    <div 
+                                        class="radial-progress bg-primary-50 text-primary-600 border-[6px] border-primary-100 text-xs font-semibold shrink-0"
+                                        style="--value: {{ item.percentage|floatformat:0 }}; --size: 3.6rem; --thickness: 0.35rem;"
+                                        aria-valuenow="{{ item.percentage|floatformat:0 }}"
+                                        role="progressbar"
+                                    >
+                                        {{ item.percentage|floatformat:0 }}%
+                                    </div>
+
+                                    <div class="grid gap-1">
+                                        <span class="font-medium whitespace-nowrap">{{ item.percentage|floatformat:2 }}%</span>
+                                        <span class="text-xs text-muted whitespace-nowrap">Аяқталу пайызы</span>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <td class="px-4 py-4 align-middle min-w-[140px]">
+                                {% if item.is_completed %}
+                                    <span class="inline-flex items-center gap-2 rounded-2xl bg-emerald-100 px-3 py-2 text-xs font-medium text-emerald-700 whitespace-nowrap">
+                                        <span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
+                                        Аяқталды
+                                    </span>
+                                {% else %}
+                                    <span class="inline-flex items-center gap-2 rounded-2xl bg-amber-100 px-3 py-2 text-xs font-medium text-amber-700 whitespace-nowrap">
+                                        <span class="w-2 h-2 rounded-full bg-amber-500 shrink-0"></span>
+                                        Өтілуде
+                                    </span>
+                                {% endif %}
+                            </td>
+
+                            <td class="px-4 py-4 align-middle min-w-[150px]">
+                                {% if item.created_at %}
+                                    <div class="grid gap-1">
+                                        <span class="font-medium whitespace-nowrap">{{ item.created_at|date:"d.m.Y" }}</span>
+                                        <span class="text-xs text-muted whitespace-nowrap">{{ item.created_at|date:"H:i" }}</span>
+                                    </div>
+                                {% else %}
+                                    <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
+
+                            <td class="px-4 py-4 align-middle min-w-[150px]">
+                                {% if item.completed_at %}
+                                    <div class="grid gap-1">
+                                        <span class="font-medium whitespace-nowrap">{{ item.completed_at|date:"d.m.Y" }}</span>
+                                        <span class="text-xs text-muted whitespace-nowrap">{{ item.completed_at|date:"H:i" }}</span>
+                                    </div>
+                                {% else %}
+                                    <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
+
+                            <td class="px-4 py-4 align-middle text-center min-w-[140px]">
+                                <a
+                                    href="{% url 'teacher:user_subject_detail' item.id %}"
+                                    class="inline-flex items-center justify-center rounded-2xl border border-border-200 bg-white px-4 py-2 text-sm font-medium hover:bg-secondary-50 transition-all whitespace-nowrap"
+                                >
+                                    Толығырақ
+                                </a>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="8" class="px-4 py-14 text-center">
+                                <div class="grid gap-2">
+                                    <h3 class="text-base font-semibold">Ештеңе табылмады</h3>
+                                    <p class="text-sm text-muted">
+                                        Фильтр немесе іздеу параметрлерін өзгертіп көріңіз.
+                                    </p>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock base_layout %}

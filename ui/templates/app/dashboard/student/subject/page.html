@@ -1,0 +1,338 @@
+{% extends "layouts/base_layout.html" %}
+{% load static %}
+
+{% block title %}{{ subject.name }} | LabVerse{% endblock title %}
+
+{% block base_layout %}
+<div class="w-full lg:max-w-screen-xl px-4 py-6 lg:py-8 mx-auto grid gap-6">
+
+    <!-- Hero -->
+    <div class="relative overflow-hidden rounded-[32px] border border-border-200 bg-white text-slate-900 shadow-sm">
+
+        <div class="grid lg:grid-cols-[1fr_320px] gap-6 p-6 lg:p-8">
+            
+            <!-- LEFT -->
+            <div class="flex flex-col items-start gap-5">
+                
+                <div class="inline-flex w-fit items-center gap-2 rounded-full bg-slate-100 px-4 py-1.5 text-sm font-medium text-slate-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m3 7 9-4 9 4" />
+                        <path d="M4 10v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+                    </svg>
+                    <span>Пән беті</span>
+                </div>
+
+                <div class="grid gap-3">
+                    <h1 class="text-2xl md:text-4xl font-black leading-tight">
+                        {{ subject.name }}
+                    </h1>
+
+                    <div class="flex flex-wrap items-center gap-3 text-sm text-slate-600">
+                        
+                        <div class="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1.5">
+                            <span>{{ subject.chapters.count }} бөлім</span>
+                        </div>
+
+                        <div class="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1.5">
+                            <span>{{ subject.lessons.count }} сабақ</span>
+                        </div>
+
+                        <div class="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1.5">
+                            <span>{{ subject.user_subjects.count }} білім алушы</span>
+                        </div>
+
+                    </div>
+                </div>
+
+                {% if subject.description %}
+                    <div class="max-w-3xl text-sm md:text-base text-slate-600 line-clamp-10">
+                        {{ subject.description|safe }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- RIGHT CARD -->
+            <div class="grid gap-4">
+                <div class="overflow-hidden rounded-[24px] border border-border-200 bg-white shadow-sm">
+                    
+                    <div class="aspect-video bg-slate-100">
+                        {% if subject.poster %}
+                            <img src="{{ subject.poster.url }}" class="w-full h-full object-cover" alt="">
+                        {% else %}
+                            <div class="h-full flex justify-center items-center text-muted bg-secondary-100">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
+                                    <path d="m3.3 7 8.7 5 8.7-5" />
+                                    <path d="M12 22V12" />
+                                </svg>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mx-4 rounded-2xl bg-slate-50 px-4 py-4">
+                        <div class="flex items-center justify-between gap-4 mb-2">
+                            <span class="text-sm text-slate-600">Сіздің прогресіңіз</span>
+                            <span class="font-semibold text-slate-900">
+                                {{ user_subject.percentage|floatformat:0 }}%
+                            </span>
+                        </div>
+
+                        <div class="w-full h-3 bg-slate-200 rounded-full overflow-hidden">
+                            <div 
+                                class="h-full rounded-full bg-primary-600"
+                                style="width: {{ user_subject.percentage|floatformat:0 }}%;"
+                            ></div>
+                        </div>
+                    </div>
+
+                    <div class="p-4 grid gap-3">
+                        
+                        {% if user_subject %}
+                            <a 
+                                href="{% url 'user_lesson' user_subject.id first_chapter_id first_lesson_id %}" 
+                                class="inline-flex items-center justify-center gap-2 rounded-2xl bg-primary-600 text-white px-5 py-3 font-semibold hover:bg-primary-700 transition-all"
+                            >
+                                Сабаққа кіру
+                            </a>
+                        {% else %}
+                            <form action="{% url 'enroll_subject' subject.id %}" method="post">
+                                {% csrf_token %}
+                                <button
+                                    type="submit"
+                                    class="w-full rounded-2xl bg-slate-900 text-white px-5 py-3 font-semibold hover:bg-slate-800"
+                                >
+                                    Пәнге жазылу
+                                </button>
+                            </form>
+                        {% endif %}
+
+                        <div class="grid grid-cols-3 gap-2">
+                            <div class="rounded-2xl bg-slate-50 px-3 py-3 text-center">
+                                <div class="text-lg font-black text-slate-900">{{ subject.chapters.count }}</div>
+                                <div class="text-xs text-slate-500">Бөлім</div>
+                            </div>
+                            <div class="rounded-2xl bg-slate-50 px-3 py-3 text-center">
+                                <div class="text-lg font-black text-slate-900">{{ subject.lessons.count }}</div>
+                                <div class="text-xs text-slate-500">Сабақ</div>
+                            </div>
+                            <div class="rounded-2xl bg-slate-50 px-3 py-3 text-center">
+                                <div class="text-lg font-black text-slate-900">{{ subject.user_subjects.count }}</div>
+                                <div class="text-xs text-slate-500">Оқушы</div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Main grid -->
+    <div class="grid lg:grid-cols-[minmax(0,1fr)_360px] gap-6 items-start">
+
+        <!-- Main content -->
+        <div class="grid gap-6">
+
+            <!-- Tabs card -->
+            <div class="rounded-[28px] border border-border-200 bg-white shadow-sm overflow-hidden">
+                <div class="px-5 lg:px-6 pt-5">
+                    <div class="border-b border-border-200">
+                        <ul 
+                            class="flex flex-wrap -mb-px text-sm font-medium text-center gap-2"
+                            id="default-tab"
+                            data-tabs-toggle="#default-tab-content"
+                            role="tablist"
+                            data-tabs-inactive-classes="text-muted border-transparent hover:text-foreground hover:border-border-300"
+                            data-tabs-active-classes="text-primary-600 border-primary-600"
+                        >
+                            <li role="presentation">
+                                <button 
+                                    class="inline-flex items-center gap-2 px-4 py-3 border-b-2 rounded-t-xl"
+                                    id="plan-tab"
+                                    data-tabs-target="#plan"
+                                    type="button"
+                                    role="tab"
+                                    aria-controls="plan"
+                                    aria-selected="false"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2" />
+                                    </svg>
+                                    <span>Пән жоспары</span>
+                                </button>
+                            </li>
+
+                            <li role="presentation">
+                                <button
+                                    class="inline-flex items-center gap-2 px-4 py-3 border-b-2 rounded-t-xl"
+                                    id="description-tab"
+                                    data-tabs-target="#description"
+                                    type="button"
+                                    role="tab"
+                                    aria-controls="description"
+                                    aria-selected="false"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M4 19.5V4a2 2 0 0 1 2-2h8.5L20 7.5V20a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2.5Z" />
+                                        <path d="M14 2v6h6" />
+                                    </svg>
+                                    <span>Толық сипаттама</span>
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div id="default-tab-content" class="p-5 lg:p-6">
+                    <!-- Plan -->
+                    <div class="hidden" id="plan" role="tabpanel" aria-labelledby="plan-tab">
+                        <div class="grid gap-4">
+                            {% for item in chapters %}
+                                <div class="rounded-3xl border border-border-200 overflow-hidden bg-secondary-50/50">
+                                    <h2 id="accordion-collapse-heading-{{ item.chapter.id }}">
+                                        <button
+                                            type="button"
+                                            class="flex items-center justify-between w-full px-5 py-4 text-left"
+                                            data-accordion-target="#accordion-collapse-body-{{ item.chapter.id }}"
+                                            aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}"
+                                            aria-controls="accordion-collapse-body-{{ item.chapter.id }}"
+                                        >
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-10 h-10 rounded-2xl bg-primary-100 text-primary-600 flex items-center justify-center">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                        stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path d="m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2" />
+                                                    </svg>
+                                                </div>
+                                                <div class="grid">
+                                                    <span class="font-semibold text-foreground">{{ item.chapter.name }}</span>
+                                                    <span class="text-sm text-muted">{{ item.lessons|length }} сабақ</span>
+                                                </div>
+                                            </div>
+
+                                            <svg data-accordion-icon class="w-4 h-4 shrink-0 text-muted" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+                                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5 5 1 1 5" />
+                                            </svg>
+                                        </button>
+                                    </h2>
+
+                                    <div
+                                        id="accordion-collapse-body-{{ item.chapter.id }}"
+                                        class="{% if not forloop.first %}hidden{% endif %}"
+                                        aria-labelledby="accordion-collapse-heading-{{ item.chapter.id }}"
+                                    >
+                                        <div class="px-4 pb-4">
+                                            <div class="grid gap-3">
+                                                {% for ls in item.lessons %}
+                                                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-2xl bg-white border border-border-200 px-4 py-4 hover:shadow-sm transition-all">
+                                                        <div class="flex items-start gap-3">
+                                                            <div class="w-11 h-11 rounded-2xl bg-violet-100 text-violet-600 flex items-center justify-center shrink-0">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                                    stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                                                                    <path d="M2 3h20" />
+                                                                    <path d="M21 3v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V3" />
+                                                                    <path d="m7 21 5-5 5 5" />
+                                                                </svg>
+                                                            </div>
+
+                                                            <div class="grid gap-1">
+                                                                <h3 class="font-semibold line-clamp-2">{{ ls.lesson.title }}</h3>
+                                                                <span class="text-sm text-muted">Сабақ материалы</span>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="inline-flex items-center gap-2 rounded-full bg-secondary-100 px-3 py-1.5 text-sm text-muted shrink-0">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                                stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                                                                <path d="M12 6v6l4 2" />
+                                                                <circle cx="12" cy="12" r="10" />
+                                                            </svg>
+                                                            <span>{{ ls.duration }}:00</span>
+                                                        </div>
+                                                    </div>
+                                                {% empty %}
+                                                    <div class="rounded-2xl border border-dashed border-border-300 bg-white px-4 py-8 text-center text-muted">
+                                                        Бөлім сабақтары қосылмаған
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% empty %}
+                                <div class="rounded-3xl border border-dashed border-border-300 bg-secondary-50 px-5 py-10 text-center text-muted">
+                                    Пәннің бөлімдері қосылмаған
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="hidden" id="description" role="tabpanel" aria-labelledby="description-tab">
+                        <div class="rounded-3xl bg-secondary-50 border border-border-200 p-5 lg:p-6 richtext">
+                            {{ subject.description|safe }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="grid gap-6 lg:sticky lg:top-6">
+            <!-- Students -->
+            <div class="rounded-[28px] border border-border-200 bg-white shadow-sm overflow-hidden">
+                <div class="px-5 py-4 border-b border-border-200">
+                    <h3 class="font-bold">Білім алушылар</h3>
+                    <p class="text-sm text-muted">Осы пәнге тіркелген қолданушылар</p>
+                </div>
+
+                <div class="grid">
+                    {% for student in subject.user_subjects.all %}
+                        <div class="flex items-center gap-3 px-5 py-4 border-b border-border-200 last:border-b-0 hover:bg-secondary-50/60 transition-all">
+                            <div class="shrink-0">
+                                {% if student.user.avatar %}
+                                    <img 
+                                        class="w-11 h-11 rounded-full object-cover"
+                                        src="{{ student.user.avatar.url }}" alt="user photo"
+                                    >
+                                {% else %}
+                                    <div class="w-11 h-11 rounded-full bg-secondary-100 flex items-center justify-center text-foreground font-semibold">
+                                        {{ student.user.first_name|first|upper }}{{ student.user.last_name|first|upper }}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="flex-1 min-w-0">
+                                <h4 class="text-sm font-semibold truncate">
+                                    {{ student.user.first_name }} {{ student.user.last_name }}
+                                </h4>
+                                <p class="text-xs text-muted truncate">
+                                    {{ student.user.email }}
+                                </p>
+                            </div>
+
+                            <div 
+                                class="radial-progress bg-primary-50 text-xs text-primary-600 border-4 border-primary-100"
+                                style="--value: {{ student.percentage|floatformat:0 }}; --size: 3.2rem; --thickness: 0.32rem;"
+                                aria-valuenow="{{ student.percentage|floatformat:0 }}" role="progressbar"
+                            >
+                                {{ student.percentage|floatformat:0 }}%
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="px-5 py-10 text-center text-muted">
+                            Әлі ешкім жазылмаған
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock base_layout %}

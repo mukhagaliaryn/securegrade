@@ -1,0 +1,103 @@
+{% load filters %}
+
+<div class="w-full mx-auto">
+    {% if user_task.is_completed %}
+        <div class="grid gap-6">
+
+            {% for uv in user_videos %}
+                <!-- status bar -->
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                    <div class="inline-flex items-center gap-2 rounded-2xl bg-secondary-100 px-4 py-3 font-medium text-secondary-700">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 6v6l4 2" />
+                            <circle cx="12" cy="12" r="10" />
+                        </svg>
+                        <span>{{ uv.watched_seconds|format_seconds }}</span>
+                    </div>
+
+                    <div class="inline-flex items-center gap-2 rounded-2xl bg-emerald-50 border border-emerald-200 px-4 py-3 font-semibold text-emerald-700">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10" />
+                            <path d="m9 12 2 2 4-4" />
+                        </svg>
+                        <span>Орындалды</span>
+                    </div>
+                </div>
+                <!-- video card -->
+                <div class="overflow-hidden rounded-[28px] border border-border-200 bg-white shadow-sm">
+                    <div class="aspect-video bg-black">
+                        {{ uv.video.url|safe }}
+                    </div>
+                </div>
+                <input type="hidden" class="watched-seconds" name="watched_{{ uv.id }}" value="0">
+            {% endfor %}
+        </div>
+
+
+    {% else %}
+
+        <form method="post" class="grid gap-6" id="video-form">
+            {% csrf_token %}
+            <!-- header -->
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div class="inline-flex items-center gap-2 rounded-2xl bg-secondary-100 px-4 py-3 font-medium text-secondary-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 6v6l4 2" />
+                        <circle cx="12" cy="12" r="10" />
+                    </svg>
+
+                    <span id="watched-timer">0 сек</span>
+                </div>
+                <button
+                    type="submit"
+                    class="inline-flex items-center justify-center gap-2 rounded-2xl bg-primary-600 text-white px-6 py-3 font-semibold hover:bg-primary-700 focus:outline-none focus:ring-4 focus:ring-primary-300 transition-all shadow-sm"
+                >
+                    Видеосабақты аяқтау
+                </button>
+            </div>
+
+            {% for uv in user_videos %}
+                <div class="overflow-hidden rounded-[28px] border border-border-200 bg-white shadow-sm">
+                    <div class="aspect-video bg-black">
+                        {{ uv.video.url|safe }}
+                    </div>
+                </div>
+                <input type="hidden" class="watched-seconds" name="watched_{{ uv.id }}" value="0">
+            {% endfor %}
+
+
+            <script>
+                let secondsWatched = 0;
+                const timerElement = document.getElementById("watched-timer");
+
+                function formatTime(seconds) {
+                    const mins = Math.floor(seconds / 60);
+                    const secs = seconds % 60;
+
+                    if (mins > 0) {
+                        return `${mins} мин ${secs} сек`;
+                    } else {
+                        return `${secs} сек`;
+                    }
+                }
+
+                const timer = setInterval(() => {
+                    secondsWatched++;
+                    if (timerElement) {
+                        timerElement.textContent = formatTime(secondsWatched);
+                    }
+                }, 1000);
+
+                document.getElementById("video-form").addEventListener("submit", function () {
+                    const inputs = document.querySelectorAll(".watched-seconds");
+                    inputs.forEach(input => {
+                        input.value = secondsWatched;
+                    });
+                });
+            </script>
+        </form>
+    {% endif %}
+</div>

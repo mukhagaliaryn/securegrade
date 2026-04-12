@@ -1,0 +1,234 @@
+{% extends 'layouts/base_layout.html' %}
+{% load static %}
+{% load filters %}
+
+{% block base_layout %}
+<div class="max-w-7xl mx-auto p-4">
+    <div class="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_380px] gap-6 items-start">
+
+        <!-- Main content -->
+        <div class="min-w-0">
+            {% block lesson_layout %}
+            {% endblock lesson_layout %}
+        </div>
+
+        <!-- Sidebar -->
+        <aside class="w-full xl:sticky xl:top-6">
+            <div 
+                id="accordion-collapse" 
+                data-accordion="collapse" 
+                data-active-classes="text-foreground"
+                data-inactive-classes="text-muted"
+                class="overflow-hidden rounded-[28px] border border-border-200 bg-white shadow-sm"
+            >
+                <div class="px-5 py-4 border-b border-border-200 bg-gradient-to-r from-slate-50 to-secondary-50">
+                    <div class="flex items-center gap-3">
+                        <div class="w-11 h-11 rounded-2xl bg-primary-100 text-primary-600 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2" />
+                            </svg>
+                        </div>
+                        <div class="grid">
+                            <h2 class="text-lg font-bold text-foreground">Сабақ құрылымы</h2>
+                            <p class="text-sm text-muted">Бөлімдер мен сабақтар тізімі</p>
+                        </div>
+                    </div>
+                </div>
+
+                {% for uc in user_chapters %}
+                    <div class="border-b border-border-200 last:border-b-0">
+                        <h2 id="accordion-collapse-heading-{{ uc.id }}">
+                            <button 
+                                type="button"
+                                class="flex items-start gap-3 justify-between w-full px-5 py-4 text-left transition-all hover:bg-secondary-50/70"
+                                data-accordion-target="#accordion-collapse-body-{{ uc.id }}" 
+                                aria-expanded="{% if uc.id == active_chapter_id %}true{% else %}false{% endif %}"
+                                aria-controls="accordion-collapse-body-{{ uc.id }}"
+                            >
+                                <div class="flex-1 min-w-0 grid gap-3">
+                                    <div class="flex items-start justify-between gap-3">
+                                        <div class="flex items-start gap-3 min-w-0">
+                                            <div class="w-10 h-10 rounded-2xl bg-primary-100 text-primary-600 flex items-center justify-center shrink-0 mt-0.5">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                    stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path d="m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2" />
+                                                </svg>
+                                            </div>
+
+                                            <div class="min-w-0 grid gap-1">
+                                                <h3 class="font-semibold text-foreground line-clamp-2">
+                                                    {{ uc.chapter.order }}-бөлім. {{ uc.chapter.name }}
+                                                </h3>
+                                                <p class="text-sm text-muted">
+                                                    {% with user_lessons_by_chapter|dict_get:uc.chapter.id as chapter_user_lessons %}
+                                                        {{ chapter_user_lessons|length }} сабақ
+                                                    {% endwith %}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                            stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"
+                                            data-accordion-icon
+                                            class="lucide lucide-chevron-up-icon lucide-chevron-up rotate-180 shrink-0 mt-1 text-muted">
+                                            <path d="m18 15-6-6-6 6" />
+                                        </svg>
+                                    </div>
+
+                                    <div class="flex flex-wrap items-center gap-2">
+                                        {% if uc.is_completed %}
+                                            <div class="inline-flex items-center gap-1.5 rounded-full bg-amber-50 text-amber-700 px-3 py-1 text-xs font-medium">
+                                                <svg class="w-4 h-4 text-amber-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+                                                    <path d="M13.849 4.22c-.684-1.626-3.014-1.626-3.698 0L8.397 8.387l-4.552.361c-1.775.14-2.495 2.331-1.142 3.477l3.468 2.937-1.06 4.392c-.413 1.713 1.472 3.067 2.992 2.149L12 19.35l3.897 2.354c1.52.918 3.405-.436 2.992-2.15l-1.06-4.39 3.468-2.938c1.353-1.146.633-3.336-1.142-3.477l-4.552-.36-1.754-4.17Z" />
+                                                </svg>
+                                                <span>{{ uc.rating }} балл</span>
+                                            </div>
+                                        {% endif %}
+
+                                        {% if uc.percentage %}
+                                            <div class="flex-1 min-w-[140px]">
+                                                <div class="flex items-center justify-between text-[11px] text-muted mb-1">
+                                                    <span>Прогресс</span>
+                                                    <span>{{ uc.percentage|floatformat:0 }}%</span>
+                                                </div>
+                                                <div class="h-2.5 w-full rounded-full bg-secondary-200 overflow-hidden">
+                                                    <div 
+                                                        class="h-full rounded-full bg-gradient-to-r from-primary-500 to-cyan-500"
+                                                        style="width: {{ uc.percentage|floatformat:0 }}%"
+                                                    ></div>
+                                                </div>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </button>
+                        </h2>
+
+                        <div
+                            id="accordion-collapse-body-{{ uc.id }}" 
+                            class="{% if uc.id == active_chapter_id %}block{% else %}hidden{% endif %}" 
+                            aria-labelledby="accordion-collapse-heading-{{ uc.id }}"
+                        >
+                            <div class="grid gap-3 p-4 bg-secondary-50/60">
+                                {% with user_lessons_by_chapter|dict_get:uc.chapter.id as chapter_user_lessons %}
+                                    {% for ul in chapter_user_lessons %}
+                                        {% if ul.status == 'in-progress' or ul.status == 'finished' %}
+                                            {% url 'user_lesson' user_subject.id uc.id ul.id as lesson_url %}
+                                            <a
+                                                href="{{ lesson_url }}"
+                                                class="group flex items-start gap-3 justify-between rounded-2xl border p-4 transition-all
+                                                    {% if request.path == lesson_url %}
+                                                        border-primary-600 bg-primary-600 text-white shadow-sm
+                                                    {% else %}
+                                                        border-border-200 bg-white hover:border-primary-200 hover:bg-primary-50/40
+                                                    {% endif %}"
+                                            >
+                                                <div class="flex items-start gap-3 min-w-0">
+                                                    <div class="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0
+                                                        {% if request.path == lesson_url %}
+                                                            bg-white/15 text-white
+                                                        {% else %}
+                                                            bg-violet-100 text-violet-600
+                                                        {% endif %}">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                            stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                                            <path d="M2 3h20" />
+                                                            <path d="M21 3v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V3" />
+                                                            <path d="m7 21 5-5 5 5" />
+                                                        </svg>
+                                                    </div>
+
+                                                    <div class="min-w-0 grid gap-1">
+                                                        <h4 class="font-medium line-clamp-2">
+                                                            {{ uc.chapter.order }}.{{ forloop.counter }}-сабақ: {{ ul.lesson.title }}
+                                                        </h4>
+
+                                                        <div class="flex items-center gap-2 text-xs
+                                                            {% if request.path == lesson_url %}
+                                                                text-white/80
+                                                            {% else %}
+                                                                text-muted
+                                                            {% endif %}">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                                stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                                                                <path d="M12 6v6l4 2" />
+                                                                <circle cx="12" cy="12" r="10" />
+                                                            </svg>
+                                                            <span>{{ ul.total_duration }}:00</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="inline-flex items-center gap-1.5 text-sm font-medium shrink-0
+                                                    {% if request.path == lesson_url %}
+                                                        text-white
+                                                    {% else %}
+                                                        text-amber-600
+                                                    {% endif %}">
+                                                    <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+                                                        <path d="M13.849 4.22c-.684-1.626-3.014-1.626-3.698 0L8.397 8.387l-4.552.361c-1.775.14-2.495 2.331-1.142 3.477l3.468 2.937-1.06 4.392c-.413 1.713 1.472 3.067 2.992 2.149L12 19.35l3.897 2.354c1.52.918 3.405-.436 2.992-2.15l-1.06-4.39 3.468-2.938c1.353-1.146.633-3.336-1.142-3.477l-4.552-.36-1.754-4.17Z" />
+                                                    </svg>
+                                                    <span>{{ ul.rating }}</span>
+                                                </div>
+                                            </a>
+                                        {% else %}
+                                            <div
+                                                class="flex items-start gap-3 justify-between rounded-2xl border border-border-200 bg-white px-4 py-4 opacity-90"
+                                            >
+                                                <div class="flex items-start gap-3 min-w-0">
+                                                    <div class="w-10 h-10 rounded-2xl bg-secondary-100 text-muted flex items-center justify-center shrink-0">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                            stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+                                                            <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+                                                            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                                                        </svg>
+                                                    </div>
+
+                                                    <div class="min-w-0 grid gap-1">
+                                                        <h4 class="font-medium text-foreground line-clamp-2">{{ ul.lesson.title }}</h4>
+                                                        <p class="text-xs text-muted">Алдымен алдыңғы сабақтарды аяқтау қажет</p>
+                                                    </div>
+                                                </div>
+
+                                                <div class="inline-flex items-center gap-1.5 text-xs text-muted shrink-0">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                        stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path d="M12 6v6l4 2" />
+                                                        <circle cx="12" cy="12" r="10" />
+                                                    </svg>
+                                                    <span>{{ ul.total_duration }}:00</span>
+                                                </div>
+                                            </div>
+                                        {% endif %}
+                                    {% empty %}
+                                        <div class="flex gap-2 justify-center text-center text-muted rounded-2xl border border-dashed border-border-300 bg-white p-5">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M2 3h20" />
+                                                <path d="M21 3v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V3" />
+                                                <path d="m7 21 5-5 5 5" />
+                                            </svg>
+                                            <span>Бөлім сабақтары қосылмаған</span>
+                                        </div>
+                                    {% endfor %}
+                                {% endwith %}
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="p-5">
+                        <div class="flex gap-2 justify-center text-center text-muted rounded-2xl border border-dashed border-border-300 bg-secondary-50 p-6">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2" />
+                            </svg>
+                            <span>Пәннің бөлімдері қосылмаған</span>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </aside>
+    </div>
+</div>
+{% endblock base_layout %}
