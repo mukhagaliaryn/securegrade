@@ -204,7 +204,7 @@ def verify_2fa_view(request):
 
             # TOTP код
             if verify_totp_code(user.otp_secret, code):
-                login(request, user, backend='apps.account.backends.EmailOrUsernameModelBackend')
+                login(request, user, backend='core.utils.backends.EmailOrUsernameModelBackend')
                 request.session.pop('pre_2fa_user_id', None)
                 request.session.pop('pre_2fa_username', None)
 
