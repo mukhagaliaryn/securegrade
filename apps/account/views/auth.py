@@ -28,10 +28,7 @@ def login_view(request):
         ip_address = get_client_ip(request)
 
         if is_login_locked(username=username, ip_address=ip_address):
-            remaining = get_remaining_lock_minutes(
-                username=username,
-                ip_address=ip_address,
-            )
+            remaining = get_remaining_lock_minutes(username=username, ip_address=ip_address)
 
             log_security_event(
                 event_type='login_failed',
@@ -49,11 +46,7 @@ def login_view(request):
             user = form.get_user()
 
             if not getattr(user, 'email_verified', False):
-                create_login_attempt(
-                    username=username,
-                    request=request,
-                    is_successful=False,
-                )
+                create_login_attempt(username=username, request=request, is_successful=False)
 
                 log_security_event(
                     event_type='login_failed',
@@ -68,18 +61,20 @@ def login_view(request):
                 )
                 return redirect('resend_verification_email')
 
+            # 2FA қосулы болса — толық login емес, 2FA тексеруге жібереміз
+            if getattr(user, 'is_2fa_enabled', False):
+                request.session['pre_2fa_user_id'] = user.id
+                request.session['pre_2fa_username'] = username
+
+                create_login_attempt(username=username, request=request, is_successful=True)
+
+                messages.info(request, 'Жүйеге кіруді аяқтау үшін Google Authenticator кодын енгізіңіз.')
+                return redirect('verify_2fa')
+
             login(request, user)
 
-            create_login_attempt(
-                username=username,
-                request=request,
-                is_successful=True,
-            )
-
-            clear_failed_attempts(
-                username=username,
-                ip_address=ip_address,
-            )
+            create_login_attempt(username=username, request=request, is_successful=True)
+            clear_failed_attempts(username=username, ip_address=ip_address)
 
             log_security_event(
                 event_type='login_success',
@@ -91,11 +86,7 @@ def login_view(request):
             messages.success(request, 'Жүйеге сәтті кірдіңіз.')
             return redirect('student')
 
-        create_login_attempt(
-            username=username,
-            request=request,
-            is_successful=False,
-        )
+        create_login_attempt(username=username, request=request, is_successful=False)
 
         log_security_event(
             event_type='login_failed',

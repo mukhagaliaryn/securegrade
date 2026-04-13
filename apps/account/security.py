@@ -1,4 +1,9 @@
+import base64
+import secrets
 from datetime import timedelta
+import io
+import pyotp
+import qrcode
 from django.conf import settings
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
@@ -209,3 +214,33 @@ def clear_failed_attempts(username: str, ip_address: str):
         ip_address=ip_address,
         is_successful=False,
     ).delete()
+
+
+
+def generate_totp_secret():
+    return pyotp.random_base32()
+
+
+def build_totp_uri(user, secret):
+    totp = pyotp.TOTP(secret)
+    account_name = user.email or user.username
+    return totp.provisioning_uri(name=account_name, issuer_name='SecureGrade')
+
+
+def generate_qr_code_base64(data: str) -> str:
+    qr = qrcode.make(data)
+    buffer = io.BytesIO()
+    qr.save(buffer, format='PNG')
+    encoded = base64.b64encode(buffer.getvalue()).decode('utf-8')
+    return f'data:image/png;base64,{encoded}'
+
+
+def verify_totp_code(secret: str, code: str) -> bool:
+    if not secret or not code:
+        return False
+    totp = pyotp.TOTP(secret)
+    return totp.verify(code, valid_window=1)
+
+
+def generate_backup_codes(count=8):
+    return [secrets.token_hex(4).upper() for _ in range(count)]

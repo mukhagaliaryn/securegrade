@@ -94,3 +94,44 @@ class ResendVerificationEmailForm(forms.Form):
 
     def clean_email(self):
         return self.cleaned_data['email'].strip().lower()
+
+
+
+class TwoFactorVerifyForm(forms.Form):
+    code = forms.CharField(
+        label='6 таңбалы код немесе backup code',
+        max_length=32,
+        widget=forms.TextInput(attrs={
+            'autocomplete': 'one-time-code',
+            'placeholder': '123456 немесе A1B2C3D4'
+        })
+    )
+
+
+class TwoFactorDisableForm(forms.Form):
+    password = forms.CharField(
+        label='Қазіргі пароль',
+        widget=forms.PasswordInput(attrs={'autocomplete': 'current-password'})
+    )
+
+    def __init__(self, *args, user=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.user = user
+
+    def clean_password(self):
+        password = self.cleaned_data['password']
+        if not self.user or not self.user.check_password(password):
+            raise ValidationError('Қазіргі пароль қате.')
+        return password
+
+
+class TwoFactorSetupForm(forms.Form):
+    code = forms.CharField(
+        label='Authenticator код',
+        max_length=6,
+        min_length=6,
+        widget=forms.TextInput(attrs={
+            'autocomplete': 'one-time-code',
+            'placeholder': '123456'
+        })
+    )

@@ -17,6 +17,9 @@ class User(AbstractUser):
     email_verification_sent_at = models.DateTimeField(
         _('Email растау хаты жіберілген уақыт'), blank=True, null=True
     )
+    is_2fa_enabled = models.BooleanField(_('2FA қосулы'), default=False)
+    otp_secret = models.CharField(_('OTP secret'), max_length=255, blank=True)
+    backup_codes = models.JSONField(_('Backup codes'), default=list, blank=True)
 
     def __str__(self):
         full_name = f'{self.first_name} {self.last_name}'.strip()

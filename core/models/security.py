@@ -33,6 +33,11 @@ class SecurityEvent(models.Model):
         ('profile_updated', _('Профиль жаңартылды')),
         ('email_verification_sent', _('Электрондық поштаны тексеру жіберілді')),
         ('email_verified', _('Электрондық пошта расталды')),
+        ('2fa_enabled', _('2FA қосулы')),
+        ('2fa_disabled', _('2FA өшірулі')),
+        ('2fa_challenge_passed', _('2FA процесінен өтті')),
+        ('2fa_challenge_failed', _('2FA процесінде қателік кетті')),
+        ('2fa_backup_code_used', _('2FA Backup Code Used')),
     )
 
     user = models.ForeignKey(

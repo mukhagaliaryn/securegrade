@@ -106,4 +106,33 @@
         Регистрация
     </a>
 </div>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const wrappers = document.querySelectorAll('[data-password-toggle]');
+
+        wrappers.forEach((wrapper) => {
+            const input = wrapper.querySelector('input');
+            const button = wrapper.querySelector('[data-toggle-btn]');
+            const eyeOpen = wrapper.querySelector('[data-eye-open]');
+            const eyeClosed = wrapper.querySelector('[data-eye-closed]');
+
+            if (!input || !button) return;
+
+            const syncIcons = () => {
+                const isPassword = input.type === 'password';
+                if (eyeOpen) eyeOpen.classList.toggle('hidden', !isPassword);
+                if (eyeClosed) eyeClosed.classList.toggle('hidden', isPassword);
+            };
+
+            button.addEventListener('click', function () {
+                input.type = input.type === 'password' ? 'text' : 'password';
+                syncIcons();
+            });
+
+            syncIcons();
+        });
+    });
+</script>
 {% endblock auth_layout %}

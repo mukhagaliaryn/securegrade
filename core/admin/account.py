@@ -14,14 +14,21 @@ class SecurityEventInline(admin.TabularInline):
 class UserAdmin(UserModelAdmin):
     model = User
     list_display = ('username', 'email', 'first_name', 'last_name', 'is_staff', 'is_superuser', 'is_active', 'date_joined')
-    list_filter = ('user_type', 'is_staff', 'is_active')
+    list_filter = ('user_type', 'email_verified', 'is_2fa_enabled', 'is_active', 'is_staff')
     search_fields = ('username', 'email', 'first_name', 'last_name',)
     ordering = ('email',)
 
     fieldsets = (
         (None, {'fields': ('avatar', 'username', 'email', 'first_name', 'last_name', 'user_type', 'password')}),
         (_('Рұқсаттама деректері'), {'fields': ('is_staff', 'is_active', 'is_superuser', 'user_permissions')}),
-        (_('Қауіпсіздік деректері'), {'fields': ('last_login', 'email_verified', 'email_verification_sent_at', )}),
+        (_('Қауіпсіздік деректері'), {'fields': (
+            'last_login',
+            'email_verified',
+            'email_verification_sent_at',
+            'is_2fa_enabled',
+            'otp_secret',
+            'backup_codes',
+        )}),
     )
 
     add_fieldsets = (

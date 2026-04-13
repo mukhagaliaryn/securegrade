@@ -5,6 +5,55 @@
 
 {% block account_layout %}
 <div class="w-full md:max-w-lg mx-auto grid gap-8">
+
+    <div class="grid md:grid-cols-2 gap-6">
+        <div class="rounded-3xl border border-border-200 bg-white p-6 shadow-sm grid gap-3">
+            <span class="text-sm font-semibold text-primary-700">Қауіпсіздік мәртебесі</span>
+            <h2 class="text-2xl font-black">Екі факторлы қорғаныс</h2>
+
+            {% if user.is_2fa_enabled %}
+                <div class="inline-flex w-fit items-center gap-2 rounded-full bg-emerald-100 text-emerald-800 px-3 py-1 text-sm font-semibold">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    2FA қосулы
+                </div>
+                <p class="text-muted">
+                    Аккаунтыңыз Google Authenticator арқылы қосымша қорғалған.
+                </p>
+                <a
+                    href="{% url 'two_factor_backup_codes' %}"
+                    class="w-fit rounded-full border border-border-300 px-4 py-2 text-sm font-medium hover:bg-secondary-100 transition"
+                >
+                    Backup кодтарды көру
+                </a>
+            {% else %}
+                <div class="inline-flex w-fit items-center gap-2 rounded-full bg-amber-100 text-amber-800 px-3 py-1 text-sm font-semibold">
+                    <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                    2FA өшірулі
+                </div>
+                <p class="text-muted">
+                    Қауіпсіздікті күшейту үшін Google Authenticator арқылы 2FA қосыңыз.
+                </p>
+                <a
+                    href="{% url 'setup_2fa' %}"
+                    class="w-fit rounded-full bg-primary-600 text-white px-4 py-2 text-sm font-medium hover:bg-primary-800 transition"
+                >
+                    2FA қосу
+                </a>
+            {% endif %}
+        </div>
+
+        <div class="rounded-3xl border border-border-200 bg-secondary-50 p-6 shadow-sm grid gap-3">
+            <span class="text-sm font-semibold text-foreground">Ұсыныс</span>
+            <h2 class="text-xl font-black">Ең жақсы қауіпсіздік тәжірибесі</h2>
+            <ul class="grid gap-2 text-sm text-muted">
+                <li>• Google Authenticator кодтарын ешкіммен бөліспеңіз</li>
+                <li>• Backup кодтарды бөлек сақтаңыз</li>
+                <li>• Құпиясөзді мерзімді түрде жаңартып тұрыңыз</li>
+                <li>• Бейтаныс құрылғылардан кіргенде абай болыңыз</li>
+            </ul>
+        </div>
+    </div>
+
     <div class="grid gap-4">
         <div class="grid pb-4 border-b border-border-200">
             <h2 class="text-2xl font-black">Парольді өзгерту</h2>
@@ -149,6 +198,50 @@
         </form>
     </div>
 
+
+    {% if user.is_2fa_enabled %}
+        <div class="rounded-3xl border border-border-200 bg-white p-6 md:p-8 shadow-sm grid gap-5">
+            <div class="grid pb-2 border-b border-border-200">
+                <h2 class="text-2xl font-black">2FA өшіру</h2>
+                <span class="text-muted">Бұл әрекет аккаунт қауіпсіздігін әлсіретеді</span>
+            </div>
+
+            <form method="post" class="grid gap-4">
+                {% csrf_token %}
+                <input type="hidden" name="disable_2fa" value="1">
+
+                <div class="grid gap-2">
+                    <label for="disable_password" class="block mb-2 ml-1 text-sm font-bold">Қазіргі пароль</label>
+                    <div class="relative" data-password-toggle>
+                        <input
+                            type="password"
+                            id="disable_password"
+                            name="password"
+                            class="block w-full py-3 px-4 pr-12 border border-border-300 rounded-2xl focus:ring-primary-600 focus:border-primary-600"
+                            required
+                        />
+                        <button type="button" data-toggle-btn class="absolute inset-y-0 right-0 flex items-center justify-center w-12 text-muted">
+                            <span data-eye-open>👁️</span>
+                            <span data-eye-closed class="hidden">🙈</span>
+                        </button>
+                    </div>
+                    {% if disable_2fa_form.password.errors %}
+                        {% for error in disable_2fa_form.password.errors %}
+                            <p class="text-sm text-destructive">{{ error }}</p>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                <button
+                    type="submit"
+                    class="w-full md:w-fit rounded-full bg-amber-600 px-5 py-2.5 text-white font-medium hover:bg-amber-700 transition"
+                >
+                    2FA-ны өшіру
+                </button>
+            </form>
+        </div>
+    {% endif %}
+
     <div class="grid gap-4">
         <div class="grid pb-4 border-b border-border-200">
             <h2 class="text-xl font-medium">Аккаунтты жою</h2>
@@ -201,4 +294,33 @@
         </form>
     </div>
 </div>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const wrappers = document.querySelectorAll('[data-password-toggle]');
+
+        wrappers.forEach((wrapper) => {
+            const input = wrapper.querySelector('input');
+            const button = wrapper.querySelector('[data-toggle-btn]');
+            const eyeOpen = wrapper.querySelector('[data-eye-open]');
+            const eyeClosed = wrapper.querySelector('[data-eye-closed]');
+
+            if (!input || !button) return;
+
+            const syncIcons = () => {
+                const isPassword = input.type === 'password';
+                if (eyeOpen) eyeOpen.classList.toggle('hidden', !isPassword);
+                if (eyeClosed) eyeClosed.classList.toggle('hidden', isPassword);
+            };
+
+            button.addEventListener('click', function () {
+                input.type = input.type === 'password' ? 'text' : 'password';
+                syncIcons();
+            });
+
+            syncIcons();
+        });
+    });
+</script>
 {% endblock account_layout %}
