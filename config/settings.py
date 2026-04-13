@@ -139,10 +139,10 @@ TAILWIND_APP_NAME = 'ui'
 MESSAGE_STORAGE = "django.contrib.messages.storage.session.SessionStorage"
 
 MESSAGE_TAGS = {
-    messages.SUCCESS: 'text-green-600',
-    messages.WARNING: 'text-amber-600',
-    messages.INFO: 'text-blue-600',
-    messages.ERROR: 'text-red-600',
+    messages.SUCCESS: 'text-emerald-600',
+    messages.WARNING: 'text-amber-500',
+    messages.INFO: 'text-brand',
+    messages.ERROR: 'text-destructive',
 }
 
 
@@ -159,9 +159,32 @@ SILENCED_SYSTEM_CHECKS = ['security.W019']
 
 # Authentification settings
 # ----------------------------------------------------------------------------------------------------------------------
+AUTHENTICATION_BACKENDS = [
+    'core.utils.backends.EmailOrUsernameModelBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
+
 LOGIN_REDIRECT_URL = 'student'
 LOGOUT_REDIRECT_URL = 'login'
 LOGIN_URL = 'login'
+PASSWORD_RESET_TIMEOUT = 60 * 60
+
+MAX_FAILED_LOGIN_ATTEMPTS = config('MAX_FAILED_LOGIN_ATTEMPTS', default=5, cast=int)
+FAILED_LOGIN_WINDOW_MINUTES = config('FAILED_LOGIN_WINDOW_MINUTES', default=15, cast=int)
+LOGIN_LOCKOUT_MINUTES = config('LOGIN_LOCKOUT_MINUTES', default=15, cast=int)
+
+
+# Email settings
+# ----------------------------------------------------------------------------------------------------------------------
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = config('EMAIL_HOST')
+EMAIL_PORT = config('EMAIL_PORT')
+EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+EMAIL_USE_TLS = config('EMAIL_USE_TLS')
+
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
+SITE_URL = config('SITE_URL')
 
 
 # CKEditor settings

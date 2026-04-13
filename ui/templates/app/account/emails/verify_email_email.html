@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <title>Email растау</title>
+</head>
+<body>
+    <p>Сәлем, <strong>{{ user.get_full_name|default:user.username }}</strong>!</p>
+    <p>
+        SecureGrade жүйесіндегі аккаунтыңызды белсендіру үшін төмендегі сілтемеге өтіңіз:
+    </p>
+    <p>
+        <a href="{{ verify_url }}">Email-ды растау</a>
+    </p>
+    <p>
+        Егер бұл әрекетті өзіңіз жасамаған болсаңыз, бұл хатты елемей қойыңыз.
+    </p>
+    <p>Құрметпен,<br>SecureGrade</p>
+</body>
+</html>
