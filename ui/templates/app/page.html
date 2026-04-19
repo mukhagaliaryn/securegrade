@@ -47,16 +47,38 @@
                     </div>
 
                     <div class="relative">
-                        <label for="{{ form.password.id_for_label }}" class="block mb-2 ml-4 text-sm font-medium">
+                        <label for="id_password" class="block mb-2 ml-4 text-sm font-bold">
                             Пароль
                         </label>
-                        <input 
-                            type="password" 
-                            id="{{ form.password.id_for_label }}"
-                            name="password"
-                            class="block w-full py-2.5 px-4 border border-border-300 text-foreground text-sm rounded-full focus:ring-primary-600 focus:border-primary-600"
-                            required 
-                        />
+
+                        <div class="relative" data-password-toggle>
+                            <input
+                                type="password"
+                                id="id_password"
+                                name="password"
+                                class="block w-full py-2.5 px-4 pr-12 border border-border-300 text-foreground text-sm rounded-full focus:ring-primary-600 focus:border-primary-600"
+                                required
+                            />
+
+                            <button
+                                type="button"
+                                data-toggle-btn
+                                class="absolute inset-y-0 right-0 flex items-center justify-center w-12 text-muted hover:text-foreground transition"
+                                aria-label="Парольді көрсету немесе жасыру"
+                            >
+                                <svg data-eye-open xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7Z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                </svg>
+
+                                <svg data-eye-closed xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="m3 3 18 18" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M10.585 10.587A2 2 0 0 0 13.414 13.414" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9.88 5.09A10.94 10.94 0 0 1 12 5c4.478 0 8.268 2.943 9.542 7a10.526 10.526 0 0 1-4.293 5.278M6.228 6.228A10.526 10.526 0 0 0 2.458 12c1.274 4.057 5.064 7 9.542 7 1.566 0 3.055-.36 4.386-1.004" />
+                                </svg>
+                            </button>
+                        </div>
+
                         {% if form.password.errors %}
                             {% for error in form.password.errors %}
                                 <p class="text-sm text-destructive">{{ error }}</p>
@@ -65,13 +87,39 @@
                     </div>
                 </div>
 
-                <div class="grid gap-2">
+                <div class="grid gap-4">
                     <button 
                         type="submit" 
                         class="cursor-pointer focus:outline-none transition-all text-white bg-primary-600 hover:bg-primary-800 focus:ring-3 focus:ring-primary-300 font-medium rounded-full px-4 py-2.5"
                     >
                         Жүйеге кіру
                     </button>
+
+                    <div class="grid md:flex gap-3 justify-between">
+                        <a 
+                            href="{% url 'resend_verification_email' %}" 
+                            class="text-sm text-primary-600 hover:text-primary-800 transition"
+                        >
+                            Email растау сілтемесін қайта жіберу
+                        </a>
+
+                        <a
+                            href="{% url 'password_reset' %}"
+                            class="text-sm text-primary-600 hover:text-primary-800 transition"
+                        >
+                            Құпиясөзді ұмыттыңыз ба?
+                        </a>
+                    </div>
+                    
+                    <div class="grid gap-2 mt-4">
+                        <button
+                            type='button'
+                            id='passkey-login-btn'
+                            class='cursor-pointer focus:outline-none transition-all bg-white border border-border-300 hover:bg-secondary-100 focus:ring-3 focus:ring-secondary-300 font-medium rounded-full px-4 py-2.5'
+                        >
+                            Passkey арқылы кіру
+                        </button>
+                    </div>
                 </div>
             </form>
         </div>
@@ -87,4 +135,90 @@
         </div>
     </div>
 </section>
+
+<script>
+    function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) {
+            return parts.pop().split(';').shift();
+        }
+        return '';
+    }
+
+    async function passkeyLogin() {
+        try {
+            const beginResponse = await fetch("{% url 'begin_passkey_authentication' %}", {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            });
+
+            const options = await beginResponse.json();
+
+            let publicKeyOptions = options;
+            if (window.PublicKeyCredential && PublicKeyCredential.parseRequestOptionsFromJSON) {
+                publicKeyOptions = PublicKeyCredential.parseRequestOptionsFromJSON(options);
+            }
+
+            const credential = await navigator.credentials.get({
+                publicKey: publicKeyOptions,
+            });
+
+            const finishResponse = await fetch("{% url 'finish_passkey_authentication' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: JSON.stringify(credential),
+            });
+
+            const result = await finishResponse.json();
+
+            if (!result.ok) {
+                alert(result.error || 'Passkey арқылы кіру сәтсіз аяқталды.');
+                return;
+            }
+
+            window.location.href = result.redirect_url;
+        } catch (error) {
+            console.error(error);
+            alert('Passkey / Face ID қолжетімсіз немесе әрекет тоқтатылды.');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const wrappers = document.querySelectorAll('[data-password-toggle]');
+
+        wrappers.forEach((wrapper) => {
+            const input = wrapper.querySelector('input');
+            const button = wrapper.querySelector('[data-toggle-btn]');
+            const eyeOpen = wrapper.querySelector('[data-eye-open]');
+            const eyeClosed = wrapper.querySelector('[data-eye-closed]');
+
+            if (!input || !button) return;
+
+            const syncIcons = () => {
+                const isPassword = input.type === 'password';
+                if (eyeOpen) eyeOpen.classList.toggle('hidden', !isPassword);
+                if (eyeClosed) eyeClosed.classList.toggle('hidden', isPassword);
+            };
+
+            button.addEventListener('click', function () {
+                input.type = input.type === 'password' ? 'text' : 'password';
+                syncIcons();
+            });
+
+            syncIcons();
+        });
+
+        const passkeyButton = document.getElementById('passkey-login-btn');
+        if (passkeyButton) {
+            passkeyButton.addEventListener('click', passkeyLogin);
+        }
+    });
+</script>
 {% endblock content %}
