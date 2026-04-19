@@ -61,3 +61,30 @@ class SecurityEvent(models.Model):
 
     def __str__(self):
         return f'{self.get_event_type_display()} - {self.user or "anon"}'
+
+
+class PasskeyCredential(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='passkeys',
+        verbose_name=_('Қолданушы'),
+    )
+    name = models.CharField(_('Құрылғы атауы'), max_length=255, blank=True)
+    credential_id = models.CharField(_('Credential ID'), max_length=512, unique=True)
+    public_key = models.TextField(_('Public key'))
+    sign_count = models.PositiveBigIntegerField(_('Sign count'), default=0)
+    transports = models.JSONField(_('Transports'), default=list, blank=True)
+    aaguid = models.CharField(_('AAGUID'), max_length=64, blank=True)
+    is_active = models.BooleanField(_('Белсенді'), default=True)
+    last_used_at = models.DateTimeField(_('Соңғы қолданылған уақыт'), null=True, blank=True)
+    created_at = models.DateTimeField(_('Жасалған уақыт'), auto_now_add=True)
+    updated_at = models.DateTimeField(_('Жаңартылған уақыт'), auto_now=True)
+
+    class Meta:
+        verbose_name = _('Passkey credential')
+        verbose_name_plural = _('Passkey credentials')
+        ordering = ('-created_at',)
+
+    def __str__(self):
+        return self.name or f'{self.user} - passkey'

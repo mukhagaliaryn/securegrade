@@ -187,6 +187,14 @@ DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
 SITE_URL = config('SITE_URL')
 
 
+# Face ID settings
+# ----------------------------------------------------------------------------------------------------------------------
+WEBAUTHN_RP_ID = config('WEBAUTHN_RP_ID')
+WEBAUTHN_RP_NAME = config('WEBAUTHN_RP_NAME')
+WEBAUTHN_RP_ORIGIN = config('WEBAUTHN_RP_ORIGIN')
+WEBAUTHN_TIMEOUT = config('WEBAUTHN_TIMEOUT', default=60000, cast=int)
+
+
 # CKEditor settings
 # ----------------------------------------------------------------------------------------------------------------------
 CKEDITOR_UPLOAD_PATH = 'uploads/'

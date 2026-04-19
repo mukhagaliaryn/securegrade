@@ -40,3 +40,5 @@ types-python-dateutil==2.9.0.20250516
 typing_extensions==4.14.0
 urllib3==2.5.0
 webencodings==0.5.1
+webauthn==2.7.1
+

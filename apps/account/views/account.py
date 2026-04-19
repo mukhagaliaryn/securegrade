@@ -109,6 +109,7 @@ def settings_view(request):
         'password_form': password_form,
         'delete_form': delete_form,
         'disable_2fa_form': disable_2fa_form,
+        'passkeys': user.passkeys.filter(is_active=True),
     }
     return render(request, 'app/account/user/settings/page.html', context)
 

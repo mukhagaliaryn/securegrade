@@ -97,6 +97,14 @@
                     Құпиясөзді ұмыттыңыз ба?
                 </a>
             </div>
+            
+            <button
+                type='button'
+                id='passkey-login-btn'
+                class='cursor-pointer focus:outline-none transition-all bg-white border border-border-300 hover:bg-secondary-100 focus:ring-3 focus:ring-secondary-300 font-medium rounded-full px-4 py-2.5'
+            >
+                Face ID / Passkey арқылы кіру
+            </button>
         </div>
     </form>
     <a 
@@ -133,6 +141,92 @@
 
             syncIcons();
         });
+    });
+</script>
+
+<script>
+    function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) {
+            return parts.pop().split(';').shift();
+        }
+        return '';
+    }
+
+    async function passkeyLogin() {
+        try {
+            const beginResponse = await fetch("{% url 'begin_passkey_authentication' %}", {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            });
+
+            const options = await beginResponse.json();
+
+            let publicKeyOptions = options;
+            if (window.PublicKeyCredential && PublicKeyCredential.parseRequestOptionsFromJSON) {
+                publicKeyOptions = PublicKeyCredential.parseRequestOptionsFromJSON(options);
+            }
+
+            const credential = await navigator.credentials.get({
+                publicKey: publicKeyOptions,
+            });
+
+            const finishResponse = await fetch("{% url 'finish_passkey_authentication' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: JSON.stringify(credential),
+            });
+
+            const result = await finishResponse.json();
+
+            if (!result.ok) {
+                alert(result.error || 'Passkey арқылы кіру сәтсіз аяқталды.');
+                return;
+            }
+
+            window.location.href = result.redirect_url;
+        } catch (error) {
+            console.error(error);
+            alert('Passkey / Face ID қолжетімсіз немесе әрекет тоқтатылды.');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const wrappers = document.querySelectorAll('[data-password-toggle]');
+
+        wrappers.forEach((wrapper) => {
+            const input = wrapper.querySelector('input');
+            const button = wrapper.querySelector('[data-toggle-btn]');
+            const eyeOpen = wrapper.querySelector('[data-eye-open]');
+            const eyeClosed = wrapper.querySelector('[data-eye-closed]');
+
+            if (!input || !button) return;
+
+            const syncIcons = () => {
+                const isPassword = input.type === 'password';
+                if (eyeOpen) eyeOpen.classList.toggle('hidden', !isPassword);
+                if (eyeClosed) eyeClosed.classList.toggle('hidden', isPassword);
+            };
+
+            button.addEventListener('click', function () {
+                input.type = input.type === 'password' ? 'text' : 'password';
+                syncIcons();
+            });
+
+            syncIcons();
+        });
+
+        const passkeyButton = document.getElementById('passkey-login-btn');
+        if (passkeyButton) {
+            passkeyButton.addEventListener('click', passkeyLogin);
+        }
     });
 </script>
 {% endblock auth_layout %}
