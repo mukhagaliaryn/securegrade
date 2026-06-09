@@ -4,7 +4,7 @@ from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 
 from core.forms.subjects import SubjectAdminForm, LessonAdminForm
-from core.models import Subject, Chapter, Lesson, LessonDocs
+from core.models import Subject, Chapter, Lesson, LessonDocs, LiveStream
 from django_summernote.admin import SummernoteModelAdmin, SummernoteModelAdminMixin
 from core.models.tasks import Task
 
@@ -107,3 +107,8 @@ class LessonAdmin(admin.ModelAdmin):
         return '-'
 
     subject_link.short_description = 'Пәнге сілтеме'
+
+
+@admin.register(LiveStream)
+class LiveStreamAdmin(admin.ModelAdmin):
+    pass

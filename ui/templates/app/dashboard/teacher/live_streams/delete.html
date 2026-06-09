@@ -1,0 +1,52 @@
+{% extends "layouts/base_layout.html" %}
+
+{% block title %}Эфирді өшіру{% endblock title %}
+
+{% block base_layout %}
+<div class="flex min-h-[calc(100vh-72px)] items-center justify-center bg-background px-4 py-8">
+    <div class="w-full max-w-xl rounded-3xl border border-border-200 bg-white p-6 shadow-sm">
+        <div class="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-red-50 text-red-600">
+            <svg class="h-7 w-7" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                 viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <path d="M12 9v4"/>
+                <path d="M12 17h.01"/>
+            </svg>
+        </div>
+
+        <h1 class="text-2xl font-semibold text-foreground">
+            Эфирді өшіру
+        </h1>
+
+        <p class="mt-2 text-sm leading-6 text-muted">
+            Сіз <span class="font-semibold text-foreground">“{{ stream.title }}”</span> эфирін өшіргелі тұрсыз.
+            Бұл әрекетті кері қайтару мүмкін емес.
+        </p>
+
+        <div class="mt-5 rounded-2xl border border-border-200 bg-secondary-50 p-4">
+            <p class="text-xs font-medium uppercase tracking-wide text-muted">Эфир уақыты</p>
+            <p class="mt-2 text-sm font-semibold text-foreground">
+                {{ stream.starts_at|date:"d F Y, H:i" }}
+                {% if stream.ends_at %}
+                    — {{ stream.ends_at|date:"H:i" }}
+                {% endif %}
+            </p>
+        </div>
+
+        <form method="post" class="mt-6 flex items-center justify-end gap-3 border-t border-border-200 pt-5">
+            {% csrf_token %}
+
+            <a href="{% url 'teacher:teacher_live_stream_detail' stream.pk %}"
+               class="rounded-2xl border border-border-200 bg-white px-4 py-2.5 text-sm font-medium text-foreground transition hover:bg-secondary-50">
+                Болдырмау
+            </a>
+
+            <button type="submit"
+                    class="rounded-2xl bg-red-500 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-red-600">
+                Иә, өшіру
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock base_layout %}

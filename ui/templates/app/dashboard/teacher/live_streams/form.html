@@ -1,0 +1,106 @@
+{% extends "layouts/base_layout.html" %}
+
+{% block title %}{{ title }}{% endblock title %}
+
+{% block base_layout %}
+<div class="mx-auto max-w-5xl px-4 py-8">
+    <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+            <h1 class="text-2xl font-semibold text-foreground">{{ title }}</h1>
+            <p class="mt-1 text-sm text-muted">
+                YouTube Live iframe кодын енгізіп, эфир уақытын белгілеңіз.
+            </p>
+        </div>
+
+        <a href="{% url 'teacher:teacher_live_stream_list' %}"
+           class="inline-flex items-center justify-center rounded-2xl border border-border-200 bg-white px-4 py-2.5 text-sm font-medium text-foreground shadow-sm transition hover:bg-secondary-50">
+            Артқа
+        </a>
+    </div>
+
+    <div class="grid gap-6 lg:grid-cols-[1fr_320px]">
+        <form method="post" class="rounded-3xl border border-border-200 bg-white p-6 shadow-sm">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                <div class="mb-5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                    {% for error in form.non_field_errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <div class="space-y-5">
+                {% for field in form %}
+                    <div>
+                        <label for="{{ field.id_for_label }}" class="mb-2 block text-sm font-medium text-foreground">
+                            {{ field.label }}
+                            {% if field.field.required %}
+                                <span class="text-red-500">*</span>
+                            {% endif %}
+                        </label>
+
+                        {{ field }}
+
+                        {% if field.help_text %}
+                            <p class="mt-1.5 text-xs leading-5 text-muted">
+                                {{ field.help_text }}
+                            </p>
+                        {% endif %}
+
+                        {% for error in field.errors %}
+                            <p class="mt-1.5 text-sm text-red-600">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="mt-6 flex items-center justify-end gap-3 border-t border-border-200 pt-5">
+                <a href="{% url 'teacher:teacher_live_stream_list' %}"
+                   class="rounded-2xl border border-border-200 bg-white px-4 py-2.5 text-sm font-medium text-foreground transition hover:bg-secondary-50">
+                    Болдырмау
+                </a>
+
+                <button type="submit"
+                        class="rounded-2xl bg-primary-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-primary-700">
+                    Сақтау
+                </button>
+            </div>
+        </form>
+
+        <aside class="space-y-4">
+            <div class="rounded-3xl border border-border-200 bg-white p-5 shadow-sm">
+                <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary-100 text-primary-700">
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                         viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5"/>
+                        <rect x="2" y="6" width="14" height="12" rx="2"/>
+                    </svg>
+                </div>
+
+                <h2 class="text-base font-semibold text-foreground">
+                    YouTube iframe қалай алынады?
+                </h2>
+
+                <ol class="mt-3 space-y-2 text-sm leading-6 text-muted">
+                    <li>1. YouTube-тағы эфирді ашыңыз.</li>
+                    <li>2. “Share / Бөлісу” батырмасын басыңыз.</li>
+                    <li>3. “Embed / Ендіру” таңдаңыз.</li>
+                    <li>4. Толық iframe кодын көшіріп, формаға қойыңыз.</li>
+                </ol>
+            </div>
+
+            <div class="rounded-3xl border border-amber-200 bg-amber-50 p-5">
+                <h3 class="text-sm font-semibold text-amber-800">
+                    Ескерту
+                </h3>
+                <p class="mt-2 text-sm leading-6 text-amber-700">
+                    Эфир iframe арқылы ашылуы үшін YouTube видеосы public немесе unlisted болуы керек.
+                    Private видео барлық студентке көрінбеуі мүмкін.
+                </p>
+            </div>
+        </aside>
+    </div>
+</div>
+{% endblock base_layout %}

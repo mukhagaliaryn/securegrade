@@ -28,4 +28,7 @@ urlpatterns = [
         subject.feedback_handler,
         name='feedback_handler'
     ),
+
+    path('live-streams/', subject.student_live_stream_list, name='student_live_stream_list'),
+    path('live-streams/<int:pk>/', subject.student_live_stream_detail, name='student_live_stream_detail'),
 ]

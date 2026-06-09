@@ -1,11 +1,15 @@
-from django.contrib.auth.decorators import login_required
 from django.db.models import Avg, Q, Prefetch
-from django.shortcuts import render, get_object_or_404
 
-from apps.dashboard.student.services.subject import convert_rating_to_five_scale
+from core.forms.subjects import LiveStreamForm
 from core.models import Subject, UserSubject, UserChapter, UserLesson, User, UserTask, UserTheory, UserVideo, \
     UserAnswer, UserSimulator
 from core.utils.decorators import role_required
+from datetime import timedelta
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
+
+from core.models import LiveStream
 
 
 def _convert_rating_10_to_5(value):
@@ -308,3 +312,102 @@ def user_subject_detail_view(request, user_subject_id):
         'app/dashboard/teacher/user_subject/page.html',
         context
     )
+
+
+
+@login_required
+@role_required('teacher')
+def teacher_live_stream_list(request):
+    today = timezone.localdate()
+    days = [today + timedelta(days=i) for i in range(30)]
+
+    streams = LiveStream.objects.filter(
+        teacher=request.user,
+        starts_at__date__gte=today,
+        starts_at__date__lte=today + timedelta(days=29),
+    ).select_related('subject')
+
+    streams_by_date = {}
+
+    for day in days:
+        streams_by_date[day] = []
+
+    for stream in streams:
+        stream_date = timezone.localtime(stream.starts_at).date()
+        streams_by_date.setdefault(stream_date, []).append(stream)
+
+    context = {
+        'days': days,
+        'streams_by_date': streams_by_date,
+    }
+
+    return render(request, 'app/dashboard/teacher/live_streams/list.html', context)
+
+
+@login_required
+@role_required('teacher')
+def teacher_live_stream_create(request):
+    if request.method == 'POST':
+        form = LiveStreamForm(request.POST)
+
+        if form.is_valid():
+            stream = form.save(commit=False)
+            stream.teacher = request.user
+            stream.save()
+            return redirect('teacher:teacher_live_stream_detail', pk=stream.pk)
+    else:
+        form = LiveStreamForm()
+
+    return render(request, 'app/dashboard/teacher/live_streams/form.html', {
+        'form': form,
+        'title': 'Жаңа эфир жасау',
+    })
+
+
+@login_required
+@role_required('teacher')
+def teacher_live_stream_update(request, pk):
+    stream = get_object_or_404(LiveStream, pk=pk, teacher=request.user)
+
+    if request.method == 'POST':
+        form = LiveStreamForm(request.POST, instance=stream)
+
+        if form.is_valid():
+            form.save()
+            return redirect('teacher:teacher_live_stream_detail', pk=stream.pk)
+    else:
+        form = LiveStreamForm(instance=stream)
+
+    return render(request, 'app/dashboard/teacher/live_streams/form.html', {
+        'form': form,
+        'title': 'Эфирді өңдеу',
+        'stream': stream,
+    })
+
+
+@login_required
+@role_required('teacher')
+def teacher_live_stream_detail(request, pk):
+    stream = get_object_or_404(
+        LiveStream.objects.select_related('subject', 'teacher'),
+        pk=pk,
+        teacher=request.user,
+    )
+
+    return render(request, 'app/dashboard/teacher/live_streams/detail.html', {
+        'stream': stream,
+    })
+
+
+@login_required
+@role_required('teacher')
+def teacher_live_stream_delete(request, pk):
+    stream = get_object_or_404(LiveStream, pk=pk, teacher=request.user)
+
+    if request.method == 'POST':
+        stream.delete()
+        return redirect('teacher:teacher_live_stream_list')
+
+    return render(request, 'app/dashboard/teacher/live_streams/delete.html', {
+        'stream': stream,
+    })

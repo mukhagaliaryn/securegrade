@@ -1,6 +1,9 @@
-from django.db import models
 from django.utils.translation import gettext_lazy as _
-from core.models import User
+import re
+from urllib.parse import urlparse, parse_qs
+from django.conf import settings
+from django.db import models
+from django.utils import timezone
 
 
 # Subject model
@@ -82,3 +85,65 @@ class LessonDocs(models.Model):
     class Meta:
         verbose_name = _('Сабақ құжаты')
         verbose_name_plural = _('Сабақ құжаттары')
+
+
+
+# LiveStream
+# ----------------------------------------------------------------------------------------------------------------------
+class LiveStream(models.Model):
+    title = models.CharField('Атауы', max_length=255)
+    description = models.TextField('Сипаттама', blank=True)
+
+    youtube_url = models.URLField('YouTube сілтемесі', blank=True)
+    iframe_code = models.TextField('YouTube iframe коды')
+
+    subject = models.ForeignKey(
+        'core.Subject',
+        on_delete=models.CASCADE,
+        related_name='live_streams',
+        verbose_name='Пән',
+    )
+    teacher = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='live_streams',
+        verbose_name='Оқытушы',
+    )
+
+    starts_at = models.DateTimeField('Басталу уақыты')
+    ends_at = models.DateTimeField('Аяқталу уақыты', null=True, blank=True)
+    is_active = models.BooleanField('Белсенді', default=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['starts_at']
+        verbose_name = 'Тікелей эфир'
+        verbose_name_plural = 'Тікелей эфирлер'
+
+    def __str__(self):
+        return self.title
+
+    @property
+    def is_live_now(self):
+        now = timezone.now()
+
+        if not self.is_active:
+            return False
+
+        if self.ends_at:
+            return self.starts_at <= now <= self.ends_at
+
+        return self.starts_at <= now
+
+    @property
+    def is_upcoming(self):
+        return timezone.now() < self.starts_at
+
+    @property
+    def is_finished(self):
+        if self.ends_at:
+            return timezone.now() > self.ends_at
+
+        return False
+

@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from django.db.models.aggregates import Avg
 from django.utils import timezone
 from django.contrib import messages
@@ -7,7 +9,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from apps.dashboard.student.services.subject import handle_post_request, get_related_data, convert_rating_to_five_scale
 from core.models import UserSubject, UserChapter, UserLesson, UserTask, UserVideo, UserAnswer, Feedback, UserTheory, \
-    UserSimulator
+    UserSimulator, LiveStream
 from core.utils.decorators import role_required
 
 
@@ -271,3 +273,45 @@ def user_lesson_task_view(request, subject_id, chapter_id, lesson_id, task_id):
         **get_related_data(user_task),
     }
     return render(request, 'app/dashboard/student/user/subject/chapter/lesson/task/page.html', context)
+
+
+
+@login_required
+@role_required('student')
+def student_live_stream_list(request):
+    today = timezone.localdate()
+    days = [today + timedelta(days=i) for i in range(30)]
+
+    streams = LiveStream.objects.filter(
+        is_active=True,
+        starts_at__date__gte=today,
+        starts_at__date__lte=today + timedelta(days=29),
+    ).select_related('subject', 'teacher')
+
+    streams_by_date = {}
+
+    for day in days:
+        streams_by_date[day] = []
+
+    for stream in streams:
+        stream_date = timezone.localtime(stream.starts_at).date()
+        streams_by_date.setdefault(stream_date, []).append(stream)
+
+    return render(request, 'app/dashboard/student/live_streams/list.html', {
+        'days': days,
+        'streams_by_date': streams_by_date,
+    })
+
+
+@login_required
+@role_required('student')
+def student_live_stream_detail(request, pk):
+    stream = get_object_or_404(
+        LiveStream.objects.select_related('subject', 'teacher'),
+        pk=pk,
+        is_active=True,
+    )
+
+    return render(request, 'app/dashboard/student/live_streams/detail.html', {
+        'stream': stream,
+    })
